@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/inputbus"
+        android:layout_width="291dp"
+        android:layout_height="50dp"
+        android:hint="버스 번호 입력" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:weightSum="10">
+
+        <EditText
+            android:id="@+id/inputstation"
+            android:layout_width="291dp"
+            android:layout_height="match_parent"
+            android:hint="정류장 이름 입력"
+            android:onClick="Button" />
+
+    <Button
+        android:id="@+id/busbutton"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="enter"
+        android:textSize="12sp"
+        android:onClick="mOnClick" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+
+        <TextView
+            android:id="@+id/inputbusarriveoutput"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </ScrollView>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+
+        <TextView
+            android:id="@+id/allbusarriveoutput"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:weightSum="10">
+
+        <EditText
+        android:id="@+id/inputsubwaystation"
+        android:layout_width="291dp"
+        android:layout_height="50dp"
+        android:hint="지하철 역 입력" />
+
+        <Spinner
+            android:id="@+id/directionspinner"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:weightSum="10">
+
+        <EditText
+            android:id="@+id/inputsubway"
+            android:layout_width="291dp"
+            android:layout_height="match_parent"
+            android:hint="지하철 호선 입력" />
+
+        <Button
+            android:id="@+id/subwaybutton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="enter"
+            android:textSize="12sp"
+            android:onClick="mOnClick" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+
+        <TextView
+            android:id="@+id/subwayarriveoutput"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </ScrollView>
+
+</LinearLayout>
