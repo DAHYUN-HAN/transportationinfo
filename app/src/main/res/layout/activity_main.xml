@@ -20,12 +20,11 @@
         android:orientation="horizontal"
         android:weightSum="10">
 
-        <EditText
-            android:id="@+id/inputstation"
-            android:layout_width="291dp"
-            android:layout_height="match_parent"
-            android:hint="정류장 이름 입력"
-            android:onClick="Button" />
+    <EditText
+        android:id="@+id/inputstation"
+        android:layout_width="291dp"
+        android:layout_height="match_parent"
+        android:hint="정류장 이름 입력" />
 
     <Button
         android:id="@+id/busbutton"

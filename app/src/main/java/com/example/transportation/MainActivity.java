@@ -20,9 +20,9 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
 
-import android.content.Intent;
-
 public class MainActivity extends AppCompatActivity{
+    List<String> listview_items;
+    ArrayAdapter<String> listview_adapter;
 
     InputMethodManager imm;
 
@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity{
 
     String directioninfo="";
 
+    public static String select_item = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,21 +86,7 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
-    public void Button(View v) {
-        Intent intent = new Intent(getApplicationContext(), StationNameActivity.class);
-        startActivityForResult(intent, 1000);
-    }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(resultCode == RESULT_OK){
-            switch (requestCode){
-// MainActivity 에서 요청할 때 보낸 요청 코드 (1000)
-                case 1000:
-                    inputstation.setText(data.getStringExtra("result"));
-                    break;
-            }
-        }
-    }
 
     public void mOnClick(View v){
         hideKeyboard();
