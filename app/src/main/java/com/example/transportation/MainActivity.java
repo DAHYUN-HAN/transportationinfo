@@ -13,9 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
-import java.util.List;
-import android.widget.ListView;
-import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.Button;
 
 import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
@@ -26,25 +24,26 @@ public class MainActivity extends AppCompatActivity{
 
     InputMethodManager imm;
 
-    EditText inputbus, inputsubway, inputsubwaystation;
-    TextView inputbusarriveoutput, allbusarriveoutput, subwayarriveoutput, inputstation;
+    EditText inputbus;
+    TextView inputbusarriveoutput, allbusarriveoutput, subwayarriveoutput, inputstation, inputsubwaystation;
 
     String bus;
     String buses;
     String subway;
-    BusID busid = new BusID();
     BusArrive busarrive = new BusArrive();
     AllBusArrive allbusarrive = new AllBusArrive();
     SubwayArrive subwayarrive = new SubwayArrive();
-    SubwaylineID subwaylinid = new SubwaylineID();
+    BusID busid = new BusID();
 
     String directioninfo="";
 
     String inputbusnumber, BusID;
 
-    String inputstationname;
+    String inputstationname, inputstationline, stationline, inputsubwaystationname, pickbusnumber;
 
     String StationID, Ord, Arsid;
+
+    Button busbutton, subwaybutton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,31 +55,79 @@ public class MainActivity extends AppCompatActivity{
         inputbusarriveoutput=(TextView)findViewById(R.id.inputbusarriveoutput);
         allbusarriveoutput=(TextView)findViewById(R.id.allbusarriveoutput);
 
-        inputsubway=(EditText)findViewById(R.id.inputsubway);
-        inputsubwaystation=(EditText)findViewById(R.id.inputsubwaystation);
+        inputsubwaystation=(TextView)findViewById(R.id.inputsubwaystation);
         subwayarriveoutput=(TextView)findViewById(R.id.subwayarriveoutput);
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        //final String[] direction = {"","상행", "하행", "외선", "내선"};
         final ArrayList direction = new ArrayList<>();
         direction.add("방향");
-        direction.add("상행");
-        direction.add("하행");
-        direction.add("외선");
-        direction.add("내선");
-        Spinner spinner = (Spinner) findViewById(R.id.directionspinner);
 
-        ArrayAdapter<String> adapter; // ArrayAdapter <String>형의 변수 선언
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, direction);
-        spinner.setAdapter(adapter);
+        final ArrayList subwayline = new ArrayList<>();
+        subwayline.add("지하철 호선 선택");
+        subwayline.add("1호선");
+        subwayline.add("2호선");
+        subwayline.add("3호선");
+        subwayline.add("4호선");
+        subwayline.add("5호선");
+        subwayline.add("6호선");
+        subwayline.add("7호선");
+        subwayline.add("8호선");
+        subwayline.add("9호선");
+        subwayline.add("경의 중앙");
+        subwayline.add("공항철도");
+        subwayline.add("경춘선");
+        subwayline.add("수인선");
+        subwayline.add("분당선");
+        subwayline.add("신분당선");
+
+        Spinner linespinner = (Spinner) findViewById(R.id.subwayspinner);
+
+        ArrayAdapter<String> lineadapter; // ArrayAdapter <String>형의 변수 선언
+        lineadapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, subwayline);
+        linespinner.setAdapter(lineadapter);
+
+        linespinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                inputstationline = subwayline.get(position).toString();
+
+                if (inputstationline.equals("2호선")) {
+                    direction.clear();
+                    direction.add("방향");
+                    direction.add("외선");
+                    direction.add("내선");
+                }
+                else if(inputstationline != "지하철 호선 선택"){
+                    direction.clear();
+                    direction.add("방향");
+                    direction.add("상행");
+                    direction.add("하행");
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        Spinner directionspinner = (Spinner) findViewById(R.id.directionspinner);
+
+        ArrayAdapter<String> directionadapter; // ArrayAdapter <String>형의 변수 선언
+        directionadapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, direction);
+        directionspinner.setAdapter(directionadapter);
 
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        directionspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
                 directioninfo = direction.get(position).toString();
+                if(directioninfo != "방향") {
+                    inputsubwaystation.setEnabled(true);
+                }
             }
 
             @Override
@@ -101,6 +148,22 @@ public class MainActivity extends AppCompatActivity{
                     Ord = data.getStringExtra("stationord");
                     Arsid = data.getStringExtra("stationarsid");
                     break;
+
+                case 2000:
+                    inputsubwaystationname = data.getStringExtra("stationname");
+                    inputsubwaystation.setText(inputsubwaystationname);
+                    stationline = data.getStringExtra("subwayid");
+                    subwaybutton = (Button) findViewById(R.id.subwaybutton);
+                    subwaybutton.setEnabled(true);
+                    break;
+
+                case 3000:
+                    pickbusnumber = data.getStringExtra("busnumber");
+                    inputbus.setText(pickbusnumber);
+                    BusID = data.getStringExtra("busid");
+                    busbutton = (Button) findViewById(R.id.busbutton);
+                    busbutton.setEnabled(true);
+                    break;
             }
         }
     }
@@ -108,13 +171,37 @@ public class MainActivity extends AppCompatActivity{
     public void mOnClick(View v){
         hideKeyboard();
         switch(v.getId()) {
-            case R.id.inputstation:
+            case R.id.busnumbersearchbutton:
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         inputbusnumber = inputbus.getText().toString();
-                        BusID = busid.getBusID(inputbusnumber);
+                        Intent intent = new Intent(getApplicationContext(), BusNumberActivity.class);
+                        //String tempbusnumber = "303";
+                        intent.putExtra("inputbusnumber",inputbusnumber);
+                        startActivityForResult(intent, 3000);
+                    }
+                }).start();
+                break;
 
+
+            case R.id.inputsubwaystation:
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(getApplicationContext(), SubwayNameActivity.class);
+                        intent.putExtra("inputstationline",inputstationline);
+                        startActivityForResult(intent, 2000);
+                    }
+                }).start();
+                break;
+
+            case R.id.inputstation:
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //inputbusnumber = inputbus.getText().toString();
+                        //BusID = busid.getBusID(inputbusnumber);
                         Intent intent = new Intent(getApplicationContext(), StationNameActivity.class);
                         intent.putExtra("inputbusid",BusID);
                         startActivityForResult(intent, 1000);
@@ -126,7 +213,6 @@ public class MainActivity extends AppCompatActivity{
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-
                         bus = busarrive.getBusArrive(StationID, BusID, Ord,inputbusnumber);
 
                         ArrayList output = new ArrayList<>();
@@ -152,11 +238,8 @@ public class MainActivity extends AppCompatActivity{
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        System.out.println("subway 버튼 눌림");
-                        String inputstationline = inputsubway.getText().toString();
-                        String inputstationname = inputsubwaystation.getText().toString();
-                        String stationline = subwaylinid.getSubwaylineID(inputstationline);
-                        subway = subwayarrive.getSubwayArrive(inputstationname, stationline, directioninfo, inputstationline);
+
+                        subway = subwayarrive.getSubwayArrive(inputsubwaystationname, stationline, directioninfo, inputstationline);
 
                         runOnUiThread(new Runnable() {
                             @Override

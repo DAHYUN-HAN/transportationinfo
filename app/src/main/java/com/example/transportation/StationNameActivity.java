@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
+import android.widget.SimpleAdapter;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -33,6 +34,7 @@ public class StationNameActivity extends AppCompatActivity {
         inputstationlist = (EditText) findViewById(R.id.inputstationlist);
 
         final ArrayAdapter busadapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1);
+        final ArrayAdapter newbusadapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1);
         stationlistview = (ListView) findViewById(R.id.stationlistview);
         stationlistview.setAdapter(busadapter);
 
@@ -47,17 +49,15 @@ public class StationNameActivity extends AppCompatActivity {
                 for(int i = 0; i < stationList.size(); i++) {
                     String x = stationList.get(i).toString();
                     busadapter.add(x);
-                    System.out.println("정보는 "+stationList.get(i).toString());
                 }
             }
         };
+        //stationlistview.setAdapter(null);
+        //stationlistview.setAdapter(busadapter);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 stationList = stationnamelist.getStationList(busid);
-
-                String[] listarray = new String[stationList.size()];
-                int size=0;
 
                 System.out.println("stationList"+ stationList);
                 System.out.println("size" + stationList.size());
@@ -72,13 +72,39 @@ public class StationNameActivity extends AppCompatActivity {
                     public void afterTextChanged(Editable edit) {
                         // TODO : item filtering
                         String filterText = edit.toString();
+                        System.out.println("filter = " + filterText);
+                        System.out.println("filterText.length()" + filterText.length());
                         if (filterText != null && filterText.length() > 0) {
-                            ArrayList<String> filterItems = new ArrayList<String>();
-                            stationlistview.setFilterText(filterText);
+                            //ArrayList<String> filterItems = new ArrayList<String>();
+                            newbusadapter.clear();
+                            for(int i = 0;i < stationList.size(); i++)
+                            {
+                                // arraylist의 모든 데이터에 입력받은 단어(charText)가 포함되어 있으면 true를 반환한다.
+                                String x = stationList.get(i).toString();
+
+                                if (x.toLowerCase().contains(filterText))
+                                {
+                                    // 검색된 데이터를 리스트에 추가한다.
+                                    String y;
+                                    if(i == 0) {
+                                        y = "\n종점.\n다음역:" + stationnamelist.getStationName().get(i+1).toString();
+                                    }
+                                    else if(i == stationList.size()-1) {
+                                        y = "\n종점.\n이전역:" + stationnamelist.getStationName().get(i-1).toString();
+                                    }
+                                    else {
+                                        y = "\n이전역:" + stationnamelist.getStationName().get(i-1).toString() + "\n다음역:" + stationnamelist.getStationName().get(i+1).toString();
+                                    }
+                                    newbusadapter.add(x+y);
+                                }
+                            }
+                            stationlistview.setAdapter(newbusadapter);
+
                         } else {
-                            stationlistview.clearTextFilter();
+                            //stationlistview.setAdapter(null);
+                            stationlistview.setAdapter(busadapter);
                         }
-                    }
+                }
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     }
@@ -98,6 +124,7 @@ public class StationNameActivity extends AppCompatActivity {
                         Toast.makeText(StationNameActivity.this,
                                 clickedname + "을(를) 클릭하셨습니다.", Toast.LENGTH_SHORT).show();
                         String result = clickedname.substring(0,clickedname.lastIndexOf(" "));
+                        System.out.println("result" + result);
                         for(int i = 0; i < stationList.size(); i++) {
                             System.out.println("result=" + result);
                             if ((stationnamelist.getStationNm().get(i).toString()).equals(result)) {

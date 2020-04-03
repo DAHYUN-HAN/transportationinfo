@@ -5,20 +5,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SubwayNameActivity"
+    tools:context=".BusNumberActivity"
     android:orientation="vertical">
 
     <EditText
-        android:id="@+id/inputstationlist"
+        android:id="@+id/inputbusnumberlist"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:hint="정류장 이름 입력" />
+        android:hint="버스 번호 입력"/>
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/inputstationlist"
+        android:layout_below="@id/inputbusnumberlist"
         android:textFilterEnabled="true"
-        android:id="@+id/stationlistview"/>
+        android:id="@+id/busnumberlistview"/>
 
 </LinearLayout>

@@ -40,6 +40,9 @@ public class StationNameList {
     ArrayList getStationarsID() {
         return arsId;
     }
+    ArrayList getStationName() {
+        return stationNm;
+    }
 
 
     ArrayList getStationNm(){
