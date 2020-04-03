@@ -14,7 +14,9 @@ public class BusID {
     String rightbusnumber = "버스 번호를 잘못 입력하였습니다.";
 
     String getBusID(String inputbusnumber){
+        System.out.println("in bus id1" + inputbusnumber);
         BusIDManager(inputbusnumber);
+        System.out.println("in bus id2" + inputbusnumber);
         return rightbusnumber;
     }
 

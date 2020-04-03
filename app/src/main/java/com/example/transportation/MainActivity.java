@@ -20,35 +20,39 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
 
+import android.content.Intent;
+
 public class MainActivity extends AppCompatActivity{
-    List<String> listview_items;
-    ArrayAdapter<String> listview_adapter;
 
     InputMethodManager imm;
 
-    EditText inputbus, inputstation, inputsubway, inputsubwaystation;
-    TextView inputbusarriveoutput, allbusarriveoutput, subwayarriveoutput;
+    EditText inputbus, inputsubway, inputsubwaystation;
+    TextView inputbusarriveoutput, allbusarriveoutput, subwayarriveoutput, inputstation;
 
     String bus;
     String buses;
     String subway;
     BusID busid = new BusID();
     BusArrive busarrive = new BusArrive();
-    StationInfo stationid = new StationInfo();
     AllBusArrive allbusarrive = new AllBusArrive();
     SubwayArrive subwayarrive = new SubwayArrive();
     SubwaylineID subwaylinid = new SubwaylineID();
 
     String directioninfo="";
 
-    public static String select_item = "";
+    String inputbusnumber, BusID;
+
+    String inputstationname;
+
+    String StationID, Ord, Arsid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         inputbus=(EditText)findViewById(R.id.inputbus);
-        inputstation=(EditText)findViewById(R.id.inputstation);
+        inputstation=(TextView)findViewById(R.id.inputstation);
         inputbusarriveoutput=(TextView)findViewById(R.id.inputbusarriveoutput);
         allbusarriveoutput=(TextView)findViewById(R.id.allbusarriveoutput);
 
@@ -86,22 +90,42 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
-
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode == RESULT_OK){
+            switch (requestCode){
+// MainActivity 에서 요청할 때 보낸 요청 코드 (1000)
+                case 1000:
+                    inputstationname = data.getStringExtra("stationname");
+                    inputstation.setText(inputstationname);
+                    StationID = data.getStringExtra("stationid");
+                    Ord = data.getStringExtra("stationord");
+                    Arsid = data.getStringExtra("stationarsid");
+                    break;
+            }
+        }
+    }
 
     public void mOnClick(View v){
         hideKeyboard();
         switch(v.getId()) {
+            case R.id.inputstation:
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        inputbusnumber = inputbus.getText().toString();
+                        BusID = busid.getBusID(inputbusnumber);
+
+                        Intent intent = new Intent(getApplicationContext(), StationNameActivity.class);
+                        intent.putExtra("inputbusid",BusID);
+                        startActivityForResult(intent, 1000);
+                    }
+                }).start();
+                break;
+
             case R.id.busbutton:
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String inputbusnumber = inputbus.getText().toString();
-                        String inputstationname = inputstation.getText().toString();
-
-                        String BusID = busid.getBusID(inputbusnumber);
-                        String StationID = stationid.getStationID(BusID, inputstationname);
-                        String Ord = stationid.getOrd();
-                        String Arsid = stationid.getArsid();
 
                         bus = busarrive.getBusArrive(StationID, BusID, Ord,inputbusnumber);
 
