@@ -22,68 +22,70 @@ public class SubwayArrive {
 
     int arrmsg1toint, arrmsg2toint;
 
-    void SubwayArriveManager(String inputname, String inputline, String inputdirection){
+    void SubwayArriveManager(String inputname, String inputline, String inputdirection) {
         check1 = false;
         check2 = false;
+
+        boolean check = false;
 
         arvlMsg2 = new ArrayList<>();
         subwayId = new ArrayList<>();
         updnLine = new ArrayList<>();
         outputarray = new ArrayList<>();
 
-        boolean check = false;
 
-        String name = URLEncoder.encode(inputname);
-
-        String queryUrl="http://swopenapi.seoul.go.kr/api/subway/" + key +
-                        "/xml/realtimeStationArrival/0/20/" + name;
-
-        try {
-            URL url = new URL(queryUrl);
-            InputStream is = url.openStream();
-            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XmlPullParser xpp = factory.newPullParser();
-            xpp.setInput(new InputStreamReader(is, "UTF-8"));
-            String tag;
-
-            int eventType = xpp.getEventType();
-            while(eventType != XmlPullParser.END_DOCUMENT){
-                switch(eventType) {
-                    case XmlPullParser.START_TAG:
-                        tag = xpp.getName();
-                        if(tag.equals("subwayId")) {
-                            xpp.next();
-                            subwayId.add(xpp.getText());
-                        }
-                        else if(tag.equals("updnLine")) {
-                            xpp.next();
-                            updnLine.add(xpp.getText());
-                        }
-                        else if(tag.equals("arvlMsg2")) {
-                            xpp.next();
-                            arvlMsg2.add(xpp.getText());
-                        }
-                        break;
-                }
-                eventType=xpp.next();
-            }
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-
-        for(int i = 0; i < arvlMsg2.size();i++) {
-            if((subwayId.get(i).toString()).equals(inputline)) {
-                if((updnLine.get(i).toString()).equals(inputdirection)) {
-                    check = true;
-                    outputarray.add(arvlMsg2.get(i));
-                }
-            }
-        }
         System.out.println("outputarray 크기" + outputarray.size());
-        System.out.println("outputarray=" + outputarray);
+        while(outputarray.size() == 0){
+
+            String name = URLEncoder.encode(inputname);
+
+            String queryUrl = "http://swopenapi.seoul.go.kr/api/subway/" + key +
+                    "/xml/realtimeStationArrival/0/20/" + name;
+
+            try {
+                URL url = new URL(queryUrl);
+                InputStream is = url.openStream();
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XmlPullParser xpp = factory.newPullParser();
+                xpp.setInput(new InputStreamReader(is, "UTF-8"));
+                String tag;
+
+                int eventType = xpp.getEventType();
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    switch (eventType) {
+                        case XmlPullParser.START_TAG:
+                            tag = xpp.getName();
+                            if (tag.equals("subwayId")) {
+                                xpp.next();
+                                subwayId.add(xpp.getText());
+                            } else if (tag.equals("updnLine")) {
+                                xpp.next();
+                                updnLine.add(xpp.getText());
+                            } else if (tag.equals("arvlMsg2")) {
+                                xpp.next();
+                                arvlMsg2.add(xpp.getText());
+                            }
+                            break;
+                    }
+                    eventType = xpp.next();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            for (int i = 0; i < arvlMsg2.size(); i++) {
+                if ((subwayId.get(i).toString()).equals(inputline)) {
+                    if ((updnLine.get(i).toString()).equals(inputdirection)) {
+                        check = true;
+                        outputarray.add(arvlMsg2.get(i));
+                    }
+                }
+            }
+            System.out.println("outputarray 크기" + outputarray.size());
+            System.out.println("outputarray=" + outputarray);
+        }
 
         if(!check) {
             output = "방향을 잘못 입력하였습니다. 확인 후 다시 시도하세요.";

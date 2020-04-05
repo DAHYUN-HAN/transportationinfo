@@ -3,6 +3,7 @@ package com.example.transportation;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -11,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Button;
 
 import android.os.Handler;
 import android.os.Message;
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity{
 
     Button busbutton, subwaybutton;
 
-    int bustime1, bustime2, subwaytime1, subwaytime2;
+    int bustime1, bustime2, subwaytime1, subwaytime2, x;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,19 @@ public class MainActivity extends AppCompatActivity{
         subwayarriveoutput=(TextView)findViewById(R.id.subwayarriveoutput);
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        inputbus.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                //Enter key Action
+                Button bt = (Button)findViewById(R.id.busnumbersearchbutton);
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    bt.performClick();
+                    return true;
+                }
+                return false;
+            }
+        });
 
         final ArrayList direction = new ArrayList<>();
         direction.add("방향");
@@ -181,11 +196,12 @@ public class MainActivity extends AppCompatActivity{
 
             bustime1--;
             bustime2--;
+            x++;
             bus = inputbusnumber + "버스" + bustime1 / 60 + "분" + bustime1 % 60 + "초후, \n\t" + bustime2 / 60 + "분" + bustime2 % 60 + "초후 도착예정";
-
-            if(bustime1 < 60 || bustime2 < 60) {
-                handler.removeMessages(0);
+            System.out.println(x);
+            if(bustime1 < 20 || bustime2 < 60 || x > 10) {
                 busbutton.performClick();
+                this.removeMessages(0);
             }
 
             inputbusarriveoutput.setText(bus);
@@ -198,11 +214,12 @@ public class MainActivity extends AppCompatActivity{
     final Handler handler2 = new Handler() {
         public void handleMessage(Message msg) {
             bustime2--;
+            x++;
             bus = inputbusnumber + "버스 " + busarrive.getarrmsg1string() +", \n\t" + bustime2 / 60 + "분" + bustime2 % 60 + "초후 도착예정";
-
-            if(bustime2 < 60) {
-                handler2.removeMessages(0);
+            System.out.println(x);
+            if(bustime2 < 20 || x > 10) {
                 busbutton.performClick();
+                this.removeMessages(0);
             }
 
             inputbusarriveoutput.setText(bus);
@@ -215,11 +232,12 @@ public class MainActivity extends AppCompatActivity{
     final Handler handler3 = new Handler() {
         public void handleMessage(Message msg) {
             bustime1--;
+            x++;
             bus = inputbusnumber + "버스" + bustime1 / 60 + "분" + bustime1 % 60 + "초후, \n\t" + busarrive.getarrmsg2string();
-
-            if(bustime1 < 60) {
-                handler3.removeMessages(0);
+            System.out.println(x);
+            if(bustime1 < 20 || x > 10) {
                 busbutton.performClick();
+                this.removeMessages(0);
             }
 
             inputbusarriveoutput.setText(bus);
@@ -233,11 +251,12 @@ public class MainActivity extends AppCompatActivity{
         public void handleMessage(Message msg) {
             subwaytime1--;
             subwaytime2--;
+            x++;
             subway = subwaystationname + "역 " + inputstationline + " " + subwaytime1 / 60 + "분" + subwaytime1 % 60 + "초후, \n\t" + subwaytime2 / 60 + "분" + subwaytime2 % 60 + "초후 도착예정";
-
-            if(subwaytime1 < 60 || subwaytime2 < 60) {
-                subwayhandler.removeMessages(0);
+            System.out.println(x);
+            if(subwaytime1 < 20 || subwaytime2 < 60 || x > 10) {
                 subwaybutton.performClick();
+                this.removeMessages(0);
             }
 
             subwayarriveoutput.setText(subway);
@@ -250,11 +269,12 @@ public class MainActivity extends AppCompatActivity{
     final Handler subwayhandler2 = new Handler() {
         public void handleMessage(Message msg) {
             subwaytime2--;
+            x++;
             subway = subwaystationname + "역 " + inputstationline + " " + subwayarrive.getarrmsg1string() +", \n\t" + subwaytime2 / 60 + "분" + subwaytime2 % 60 + "초후 도착예정";
-
-            if(subwaytime2 < 60) {
-                subwayhandler2.removeMessages(0);
+            System.out.println(x);
+            if(subwaytime2 < 20 || x > 10) {
                 subwaybutton.performClick();
+                this.removeMessages(0);
             }
 
             subwayarriveoutput.setText(subway);
@@ -267,12 +287,13 @@ public class MainActivity extends AppCompatActivity{
     final Handler subwayhandler3 = new Handler() {
         public void handleMessage(Message msg) {
             subwaytime1--;
+            x++;
             subway = subwaystationname + "역 " + inputstationline + " " + subwaytime1 / 60 + "분" + subwaytime1 % 60 + "초후, \n\t" + subwayarrive.getarrmsg2string();
             subwayarriveoutput.setText(subway);
-
-            if(subwaytime1 < 60) {
-                subwayhandler3.removeMessages(0);
+            System.out.println(x);
+            if(subwaytime1 < 20 || x > 10) {
                 subwaybutton.performClick();
+                this.removeMessages(0);
             }
 
             // 메세지를 처리하고 또다시 핸들러에 메세지 전달 (1000ms 지연)
@@ -283,12 +304,13 @@ public class MainActivity extends AppCompatActivity{
     final Handler subwayhandler4 = new Handler() {
         public void handleMessage(Message msg) {
             subwaytime1--;
+            x++;
             subway = subwaystationname + "역 " + inputstationline + " " + subwaytime1 / 60 + "분" + subwaytime1 % 60 + "초후 도착예정";
             subwayarriveoutput.setText(subway);
-
-            if(subwaytime1 < 60) {
-                subwayhandler4.removeMessages(0);
+            System.out.println(x);
+            if(subwaytime1 < 20 || x > 10) {
                 subwaybutton.performClick();
+                this.removeMessages(0);
             }
 
             // 메세지를 처리하고 또다시 핸들러에 메세지 전달 (1000ms 지연)
@@ -340,18 +362,7 @@ public class MainActivity extends AppCompatActivity{
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        if(handler != null) {
-                            handler.removeMessages(0);
-                        }
-
-                        if(handler2 != null) {
-                            handler2.removeMessages(0);
-                        }
-
-                        if(handler3 != null) {
-                            handler3.removeMessages(0);
-                        }
-
+                        x=0;
                         busarrive.getBusArrive(StationID, BusID, Ord);
                         boolean check = busarrive.getcheck1() && busarrive.getcheck2();
                         if(check) {
@@ -359,21 +370,44 @@ public class MainActivity extends AppCompatActivity{
                             bustime1 = busarrive.getTime1();
                             bustime2 = busarrive.getTime2();
 
+
+                            handler.removeMessages(0);
+                            handler2.removeMessages(0);
+                            handler3.removeMessages(0);
+
                             Message msg = handler.obtainMessage();
                             handler.sendMessage(msg);
                         }
                         else if(busarrive.getcheck1()){
                             System.out.println("busarrive.getcheck1()"+busarrive.getTime1());
                             bustime1 = busarrive.getTime1();
+
+
+                            handler.removeMessages(0);
+                            handler2.removeMessages(0);
+                            handler3.removeMessages(0);
+
                             Message msg = handler3.obtainMessage();
                             handler3.sendMessage(msg);
                         }
                         else if(busarrive.getcheck2()){
                             bustime2 = busarrive.getTime2();
+
+
+                            handler.removeMessages(0);
+                            handler2.removeMessages(0);
+                            handler3.removeMessages(0);
+
                             Message msg = handler2.obtainMessage();
                             handler2.sendMessage(msg);
                         }
                         else {
+
+
+                            handler.removeMessages(0);
+                            handler2.removeMessages(0);
+                            handler3.removeMessages(0);
+
                             bus = inputbusnumber + "버스 "+busarrive.getoutput();
                         }
 
@@ -401,22 +435,11 @@ public class MainActivity extends AppCompatActivity{
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-
-                        if(subwayhandler != null) {
-                            subwayhandler.removeMessages(0);
-                        }
-
-                        if(subwayhandler2 != null) {
-                            subwayhandler2.removeMessages(0);
-                        }
-
-                        if(subwayhandler3 != null) {
-                            subwayhandler3.removeMessages(0);
-                        }
-
-                        if(subwayhandler4 != null) {
-                            subwayhandler3.removeMessages(0);
-                        }
+                        x=0;
+                        subwayhandler.removeMessages(0);
+                        subwayhandler2.removeMessages(0);
+                        subwayhandler3.removeMessages(0);
+                        subwayhandler3.removeMessages(0);
 
                         ArrayList subwayoutput = new ArrayList<>();
                         subwayarrive.SubwayArriveManager(inputsubwaystationname, stationline, directioninfo);
@@ -427,6 +450,11 @@ public class MainActivity extends AppCompatActivity{
                         if(subwayoutput.size() == 1) {
                             if(subwayarrive.getcheck1()) {
                                 subwaytime1 = subwayarrive.getTime1();
+
+                                subwayhandler.removeMessages(0);
+                                subwayhandler2.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
                                 Message msg = subwayhandler4.obtainMessage();
                                 subwayhandler4.sendMessage(msg);
                             }
@@ -442,20 +470,38 @@ public class MainActivity extends AppCompatActivity{
                                 subwaytime1 = subwayarrive.getTime1();
                                 subwaytime2 = subwayarrive.getTime2();
 
+                                subwayhandler.removeMessages(0);
+                                subwayhandler2.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
                                 Message msg = subwayhandler.obtainMessage();
                                 subwayhandler.sendMessage(msg);
                             }
                             else if(subwayarrive.getcheck1()){
                                 subwaytime1 = subwayarrive.getTime1();
+
+                                subwayhandler.removeMessages(0);
+                                subwayhandler2.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
                                 Message msg = subwayhandler3.obtainMessage();
                                 subwayhandler3.sendMessage(msg);
                             }
                             else if(subwayarrive.getcheck2()){
                                 subwaytime2 = subwayarrive.getTime2();
+
+                                subwayhandler.removeMessages(0);
+                                subwayhandler2.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
                                 Message msg = subwayhandler2.obtainMessage();
                                 subwayhandler2.sendMessage(msg);
                             }
                             else {
+                                subwayhandler.removeMessages(0);
+                                subwayhandler2.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
+                                subwayhandler3.removeMessages(0);
                                 subway = subwaystationname + "역 " + inputstationline + " " + subwayarrive.getoutput();
                             }
 
