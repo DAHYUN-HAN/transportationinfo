@@ -12,11 +12,22 @@ import java.util.ArrayList;
 public class BusArrive {
     String key="spIogpzyHT653IuGRUeM7ATfWrT7y25rWagxWFC%2FGX5i4Brt2D1gfv%2B%2BO8RAeQILa61XvGKz1WhM9sqK%2BH9qyw%3D%3D";
     String output;
+    boolean check1, check2;
 
-    void BusArriveManager(String tempstationid, String tempbustid, String tempord, String inputbusnumber){
-        ArrayList arrmsg1 = new ArrayList<>();
-        ArrayList arrmsg2 = new ArrayList<>();
-
+    ArrayList arrmsg1 = new ArrayList<>();
+    ArrayList arrmsg2 = new ArrayList<>();
+    int arrmsg1toint, arrmsg2toint;
+    String getarrmsg1string() {
+        return arrmsg1.get(0).toString();
+    }
+    String getarrmsg2string() {
+        return arrmsg2.get(0).toString();
+    }
+    void BusArriveManager(String tempstationid, String tempbustid, String tempord){
+        check1 = false;
+        check2 = false;
+        arrmsg1.clear();
+        arrmsg2.clear();
         String stationid = URLEncoder.encode(tempstationid);
         String bustid = URLEncoder.encode(tempbustid);
         String ord = URLEncoder.encode(tempord);
@@ -52,11 +63,76 @@ public class BusArrive {
         }catch (Exception e) {
             e.printStackTrace();
         }
-        output = inputbusnumber + "버스 " + arrmsg1.get(0).toString() + ", \n\t" + arrmsg2.get(0).toString() + " 도착예정";
+        if(isStringDouble((arrmsg1.get(0).toString()).substring(0,1))) {
+            //숫자이면
+            arrmsg1toint = setTime(arrmsg1);
+            System.out.println("arrmsg1toint" + arrmsg1toint);
+            check1 = true;
+        }
+        if(isStringDouble((arrmsg2.get(0).toString()).substring(0,1))){
+            System.out.println("(arrmsg2.get(0).toString()).substring(0,1))" + (arrmsg2.get(0).toString()).substring(0,1));
+            check2 = true;
+            arrmsg2toint = setTime(arrmsg2);
+        }
+        else {
+            output = arrmsg1.get(0).toString() + ", \n\t" + arrmsg2.get(0).toString() + " 도착예정";
+            check1 = false;
+            check2 = false;
+        }
     }
 
-    String getBusArrive(String tempstationid, String tempbustid, String tempord, String inputbusnumber){
-        BusArriveManager(tempstationid, tempbustid, tempord, inputbusnumber);
+    void getBusArrive(String tempstationid, String tempbustid, String tempord){
+        BusArriveManager(tempstationid, tempbustid, tempord);
+    }
+    boolean getcheck1(){
+        return check1;
+    }
+    boolean getcheck2(){
+        return check2;
+    }
+
+    int setTime(ArrayList arrmsg) {
+
+        String value = arrmsg.get(0).toString();
+
+        System.out.println(value);
+
+
+        String minute =value.substring(0,value.lastIndexOf("분"));
+        String second;
+        if(value.contains("초")) {
+            second =value.substring(value.lastIndexOf("분")+1,value.lastIndexOf("초"));
+        }
+        else {
+            second = "0";
+        }
+        int intminute = Integer.parseInt(minute);
+        int intsecond = Integer.parseInt(second);
+        System.out.println("value는 " + value);
+        System.out.println("time은 " + intminute);
+        System.out.println("second는 " + intsecond);
+        System.out.println("int니?" + (intminute*60 + intsecond));
+        return intminute*60 + intsecond;
+    }
+
+    int getTime1() {
+        return arrmsg1toint;
+    }
+
+    int getTime2() {
+        return arrmsg2toint;
+    }
+
+    String getoutput() {
         return output;
+    }
+
+    public static boolean isStringDouble(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

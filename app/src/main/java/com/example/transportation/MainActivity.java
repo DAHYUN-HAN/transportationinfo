@@ -12,6 +12,9 @@ import android.widget.TextView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import android.os.Handler;
+import android.os.Message;
+
 import java.util.ArrayList;
 import android.widget.Button;
 
@@ -19,6 +22,8 @@ import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
 
 import android.content.Intent;
+
+import android.os.CountDownTimer;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -44,6 +49,8 @@ public class MainActivity extends AppCompatActivity{
     String StationID, Ord, Arsid;
 
     Button busbutton, subwaybutton;
+
+    int bustime1, bustime2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,10 +170,49 @@ public class MainActivity extends AppCompatActivity{
                     BusID = data.getStringExtra("busid");
                     busbutton = (Button) findViewById(R.id.busbutton);
                     busbutton.setEnabled(true);
+                    inputstation.setEnabled(true);
                     break;
             }
         }
     }
+
+    final Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
+            bustime1--;
+            bustime2--;
+            bus = inputbusnumber + "버스" + bustime1 / 60 + "분" + bustime1 % 60 + "초후, \n\t" + bustime2 / 60 + "분" + bustime2 % 60 + "초후 도착예정";
+
+            inputbusarriveoutput.setText(bus);
+
+            // 메세지를 처리하고 또다시 핸들러에 메세지 전달 (1000ms 지연)
+            handler.sendEmptyMessageDelayed(0,1000);
+        }
+    };
+
+    final Handler handler2 = new Handler() {
+        public void handleMessage(Message msg) {
+            bustime2--;
+            bus = inputbusnumber + "버스 " + busarrive.getarrmsg1string() +", \n\t" + bustime2 / 60 + "분" + bustime2 % 60 + "초후 도착예정";
+
+            inputbusarriveoutput.setText(bus);
+
+            // 메세지를 처리하고 또다시 핸들러에 메세지 전달 (1000ms 지연)
+            handler2.sendEmptyMessageDelayed(0,1000);
+        }
+    };
+
+    final Handler handler3 = new Handler() {
+        public void handleMessage(Message msg) {
+            bustime1--;
+            bus = inputbusnumber + "버스" + bustime1 / 60 + "분" + bustime1 % 60 + "초후, \n\t" + busarrive.getarrmsg2string();
+
+            inputbusarriveoutput.setText(bus);
+
+            // 메세지를 처리하고 또다시 핸들러에 메세지 전달 (1000ms 지연)
+            handler3.sendEmptyMessageDelayed(0,1000);
+        }
+    };
+
 
     public void mOnClick(View v){
         hideKeyboard();
@@ -213,9 +259,44 @@ public class MainActivity extends AppCompatActivity{
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        bus = busarrive.getBusArrive(StationID, BusID, Ord,inputbusnumber);
+                        if(handler != null) {
+                            handler.removeMessages(0);
+                        }
 
-                        ArrayList output = new ArrayList<>();
+                        if(handler2 != null) {
+                            handler2.removeMessages(0);
+                        }
+
+                        if(handler3 != null) {
+                            handler3.removeMessages(0);
+                        }
+
+                        busarrive.getBusArrive(StationID, BusID, Ord);
+                        boolean check = busarrive.getcheck1() && busarrive.getcheck2();
+                        if(check) {
+                            //숫자
+                            bustime1 = busarrive.getTime1();
+                            bustime2 = busarrive.getTime2();
+
+                            Message msg = handler.obtainMessage();
+                            handler.sendMessage(msg);
+                        }
+                        else if(busarrive.getcheck1()){
+                            bustime1 = busarrive.getTime1();
+                            Message msg = handler3.obtainMessage();
+                            handler3.sendMessage(msg);
+                        }
+                        else if(busarrive.getcheck2()){
+                            bustime2 = busarrive.getTime2();
+                            Message msg = handler2.obtainMessage();
+                            handler2.sendMessage(msg);
+                        }
+                        else {
+                            bus = inputbusnumber + "버스 "+busarrive.getoutput();
+                        }
+
+
+                    ArrayList output = new ArrayList<>();
                         output = allbusarrive.getAllBusArrive(Arsid);
 
                         buses="";
