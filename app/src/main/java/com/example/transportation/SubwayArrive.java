@@ -13,12 +13,23 @@ import java.util.ArrayList;
 public class SubwayArrive {
     String key="534d6b4767676b73313239724152544e";
     String output;
+    boolean check1, check2;
 
-    void SubwayArriveManager(String inputname, String inputline, String inputdirection, String inputstationline){
-        ArrayList arvlMsg2 = new ArrayList<>();
-        ArrayList subwayId = new ArrayList<>();
-        ArrayList updnLine = new ArrayList<>();
-        ArrayList outputarray = new ArrayList<>();
+    ArrayList arvlMsg2;
+    ArrayList subwayId;
+    ArrayList updnLine;
+    ArrayList outputarray;
+
+    int arrmsg1toint, arrmsg2toint;
+
+    void SubwayArriveManager(String inputname, String inputline, String inputdirection){
+        check1 = false;
+        check2 = false;
+
+        arvlMsg2 = new ArrayList<>();
+        subwayId = new ArrayList<>();
+        updnLine = new ArrayList<>();
+        outputarray = new ArrayList<>();
 
         boolean check = false;
 
@@ -61,6 +72,8 @@ public class SubwayArrive {
             e.printStackTrace();
         }
 
+
+
         for(int i = 0; i < arvlMsg2.size();i++) {
             if((subwayId.get(i).toString()).equals(inputline)) {
                 if((updnLine.get(i).toString()).equals(inputdirection)) {
@@ -69,23 +82,117 @@ public class SubwayArrive {
                 }
             }
         }
+        System.out.println("outputarray 크기" + outputarray.size());
+        System.out.println("outputarray=" + outputarray);
 
         if(!check) {
             output = "방향을 잘못 입력하였습니다. 확인 후 다시 시도하세요.";
         }
         else {
-            output = inputname + "역 " + inputstationline + " ";
-            for (int i = 0; i < outputarray.size(); i++) {
-                output += outputarray.get(i).toString() + ", \n\t";
+            if(outputarray.size() == 1) {
+                if(isStringDouble((outputarray.get(0).toString()).substring(0,1))) {
+                    //숫자이면
+                    arrmsg1toint = setTime(outputarray.get(0).toString());
+                    System.out.println("arrmsg1toint" + arrmsg1toint);
+                    check1 = true;
+                }
+                else {
+                    output = outputarray.get(0).toString();
+                }
             }
-            output = output.substring(0, output.length()-4);
-            output += "도착예정";
-        }
+            else {
+                if(isStringDouble((outputarray.get(0).toString()).substring(0,1))) {
+                    //숫자이면
+                    arrmsg1toint = setTime(outputarray.get(0).toString());
+                    System.out.println("arrmsg1toint" + arrmsg1toint);
+                    check1 = true;
+                }
+                if(isStringDouble((outputarray.get(1).toString()).substring(0,1))){
+                    check2 = true;
+                    arrmsg2toint = setTime(outputarray.get(1).toString());
+                }
+                if(!check2&&!check1){
+                    output = outputarray.get(0).toString() + ", \n\t" + outputarray.get(1).toString();
+                    check1 = false;
+                    check2 = false;
+                }
+            }
 
+        }
     }
 
-    String getSubwayArrive(String inputname, String inputline, String inputdirection, String inputstationline){
-        SubwayArriveManager(inputname, inputline, inputdirection, inputstationline);
+    String getarrmsg1string() {
+        return outputarray.get(0).toString();
+    }
+    String getarrmsg2string() {
+        return outputarray.get(1).toString();
+    }
+
+    ArrayList getoutputarray() {
+        return outputarray;
+    }
+
+    String getoutput() {
         return output;
+    }
+
+    int getTime1() {
+        return arrmsg1toint;
+    }
+
+    int getTime2() {
+        return arrmsg2toint;
+    }
+
+
+    int setTime(String arrmsg) {
+        String minute, second;
+        System.out.println("arrmsg=" + arrmsg);
+
+        if(arrmsg.contains("분")) {
+            minute =arrmsg.substring(0,arrmsg.lastIndexOf("분"));
+        }
+        else {
+            minute = "0";
+        }
+
+        System.out.println("minute= " + minute);
+
+        if(arrmsg.contains("초")) {
+            if(arrmsg.contains("분")) {
+                second =arrmsg.substring(arrmsg.lastIndexOf("분")+2,arrmsg.lastIndexOf("초"));
+            }
+            else {
+                second =arrmsg.substring(0,arrmsg.lastIndexOf("초"));
+            }
+        }
+
+        else {
+            second = "0";
+        }
+        int intminute = Integer.parseInt(minute);
+        int intsecond = Integer.parseInt(second);
+        System.out.println("arrmsg " + arrmsg);
+        System.out.println("time은 " + intminute);
+        System.out.println("second는 " + intsecond);
+        System.out.println("int니?" + (intminute*60 + intsecond));
+        return intminute*60 + intsecond;
+    }
+
+    public static boolean isStringDouble(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    boolean getcheck1(){
+        System.out.println("check1"+check1);
+        return check1;
+    }
+    boolean getcheck2(){
+        return check2;
     }
 }

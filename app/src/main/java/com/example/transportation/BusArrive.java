@@ -63,6 +63,7 @@ public class BusArrive {
         }catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("arrmsg1" + arrmsg1);
         if(isStringDouble((arrmsg1.get(0).toString()).substring(0,1))) {
             //숫자이면
             arrmsg1toint = setTime(arrmsg1);
@@ -74,7 +75,7 @@ public class BusArrive {
             check2 = true;
             arrmsg2toint = setTime(arrmsg2);
         }
-        else {
+        if(!check2&&!check1){
             output = arrmsg1.get(0).toString() + ", \n\t" + arrmsg2.get(0).toString() + " 도착예정";
             check1 = false;
             check2 = false;
@@ -85,6 +86,7 @@ public class BusArrive {
         BusArriveManager(tempstationid, tempbustid, tempord);
     }
     boolean getcheck1(){
+        System.out.println("check1"+check1);
         return check1;
     }
     boolean getcheck2(){
