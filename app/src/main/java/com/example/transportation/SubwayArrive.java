@@ -35,7 +35,7 @@ public class SubwayArrive {
 
 
         System.out.println("outputarray 크기" + outputarray.size());
-       // while(outputarray.size() == 0){
+
 
             String name = URLEncoder.encode(inputname);
 
@@ -43,36 +43,38 @@ public class SubwayArrive {
                     "/xml/realtimeStationArrival/0/20/" + name;
             System.out.println(queryUrl);
 
-            try {
-                URL url = new URL(queryUrl);
-                InputStream is = url.openStream();
-                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                factory.setNamespaceAware(true);
-                XmlPullParser xpp = factory.newPullParser();
-                xpp.setInput(new InputStreamReader(is, "UTF-8"));
-                String tag;
+            while(subwayId.size() == 0) {
+                try {
+                    URL url = new URL(queryUrl);
+                    InputStream is = url.openStream();
+                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                    factory.setNamespaceAware(true);
+                    XmlPullParser xpp = factory.newPullParser();
+                    xpp.setInput(new InputStreamReader(is, "UTF-8"));
+                    String tag;
 
-                int eventType = xpp.getEventType();
-                while (eventType != XmlPullParser.END_DOCUMENT) {
-                    switch (eventType) {
-                        case XmlPullParser.START_TAG:
-                            tag = xpp.getName();
-                            if (tag.equals("subwayId")) {
-                                xpp.next();
-                                subwayId.add(xpp.getText());
-                            } else if (tag.equals("updnLine")) {
-                                xpp.next();
-                                updnLine.add(xpp.getText());
-                            } else if (tag.equals("arvlMsg2")) {
-                                xpp.next();
-                                arvlMsg2.add(xpp.getText());
-                            }
-                            break;
+                    int eventType = xpp.getEventType();
+                    while (eventType != XmlPullParser.END_DOCUMENT) {
+                        switch (eventType) {
+                            case XmlPullParser.START_TAG:
+                                tag = xpp.getName();
+                                if (tag.equals("subwayId")) {
+                                    xpp.next();
+                                    subwayId.add(xpp.getText());
+                                } else if (tag.equals("updnLine")) {
+                                    xpp.next();
+                                    updnLine.add(xpp.getText());
+                                } else if (tag.equals("arvlMsg2")) {
+                                    xpp.next();
+                                    arvlMsg2.add(xpp.getText());
+                                }
+                                break;
+                        }
+                        eventType = xpp.next();
                     }
-                    eventType = xpp.next();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
 
 
@@ -86,10 +88,11 @@ public class SubwayArrive {
             }
             System.out.println("outputarray 크기" + outputarray.size());
             System.out.println("outputarray=" + outputarray);
-    //    }
+
+   //     }
 
         if(!check) {
-            output = "방향을 잘못 입력하였습니다. 확인 후 다시 시도하세요.";
+            output = "다시한번 시도해주세요.";
         }
         else {
             if(outputarray.size() == 1) {

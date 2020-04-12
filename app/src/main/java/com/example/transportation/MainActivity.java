@@ -2,6 +2,8 @@ package com.example.transportation;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -28,6 +31,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.content.Intent;
 
 import android.os.CountDownTimer;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -46,6 +50,7 @@ public class MainActivity extends AppCompatActivity{
     AllBusArrive allbusarrive = new AllBusArrive();
     SubwayArrive subwayarrive = new SubwayArrive();
 
+
     SubwayLastStation subwaylaststation = new SubwayLastStation();
 
     String directioninfo="";
@@ -63,8 +68,8 @@ public class MainActivity extends AppCompatActivity{
     int bustime1, bustime2, subwaytime1, subwaytime2, x;
 
     private LastStationDBOpenHelper laststationdbopenhelper;
+    private SaveBusDBOpenHelper savebusdbopenhelper;
 
-    String sort = "subwaystationid";
     int size;
     String arrtime, deptime;
 
@@ -74,6 +79,14 @@ public class MainActivity extends AppCompatActivity{
     String id;
     String dailytype;
     String updowntype;
+
+    long nowIndex;
+    static ArrayList<String> busarrayIndex =  new ArrayList<String>();
+    static ArrayList<String> busarrayData = new ArrayList<String>();
+
+    ArrayList subwayName = new ArrayList<>();
+
+    ArrayAdapter<String> arrayAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,11 +107,21 @@ public class MainActivity extends AppCompatActivity{
 
         subwaylastarrive=(TextView)findViewById(R.id.subwaylastarrive);
 
+        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+        ListView listView = (ListView) findViewById(R.id.savebusinfo);
+        listView.setAdapter(arrayAdapter);
+        listView.setOnItemClickListener(onClickListener);
+        listView.setOnItemLongClickListener(longClickListener);
+
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         laststationdbopenhelper = new LastStationDBOpenHelper(this);
         laststationdbopenhelper.open();
         laststationdbopenhelper.create();
+
+        savebusdbopenhelper = new SaveBusDBOpenHelper(this);
+        savebusdbopenhelper.open();
+        savebusdbopenhelper.create();
 
         inputbus.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -127,7 +150,7 @@ public class MainActivity extends AppCompatActivity{
         subwayline.add("7호선");
         subwayline.add("8호선");
         subwayline.add("9호선");
-        subwayline.add("경의 중앙");
+        subwayline.add("경의중앙선");
         subwayline.add("공항철도");
         subwayline.add("경춘선");
         subwayline.add("수인선");
@@ -139,6 +162,56 @@ public class MainActivity extends AppCompatActivity{
         ArrayAdapter<String> lineadapter; // ArrayAdapter <String>형의 변수 선언
         lineadapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, subwayline);
         linespinner.setAdapter(lineadapter);
+
+        String[][] subwayName = {
+                {"1호선", "소요산"},
+                {"1호선","인천"},
+                {"1호선","광명"},
+                {"1호선","서동탄"},
+                {"1호선","신창"},
+                {"2호선","까치산"},
+                {"2호선","신설동"},
+                {"3호선","대화"},
+                {"3호선","오금"},
+                {"4호선","오이도"},
+                {"4호선","당고개"},
+                {"5호선","방화"},
+                {"5호선","마천"},
+                {"5호선","상일동"},
+                {"6호선","응암"},
+                {"6호선","봉화산"},//상행
+                {"7호선","장암"},//하행
+                {"7호선","부평구청"},
+                {"8호선","암사"},//하행
+                {"8호선","모란"},
+                {"9호선","개화"},//하행
+                {"9호선","삼전"},
+                {"9호선","석촌고분"},
+                {"9호선","석촌"},
+                {"9호선","송파나루"},
+                {"9호선","한성백제"},
+                {"9호선","올림픽공원"},
+                {"9호선","둔촌오륜"},
+                {"9호선","중앙보훈병원"},
+                {"경의중앙선","문산"},//하행
+                {"경의중앙선","지평"},
+                {"경의중앙선","용문"},//상행
+                {"경춘선","청량리"},
+                {"경춘선","회기"},
+                {"경춘선","중랑"},
+                {"경춘선","춘천"},//상행
+                {"공항철도","서울"},//상행
+                {"공항철도","인천공항2터미널"},//하행
+                {"분당선","왕십리"},//하행
+                {"분당선","수원"},//상행
+                {"수인선","오이도"},//상행
+                {"수인선","인천"},
+                {"수인선","신포"},
+                {"수인선","숭의"},
+                {"수인선","인하대"},
+                {"신분당선","강남"},//하행
+                {"신분당선","광교"}//상행
+        };
 
         linespinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -188,6 +261,9 @@ public class MainActivity extends AppCompatActivity{
 
             }
         });
+
+        getBUSDatabase();
+
     }
 
     public String getDatabase(String sort){
@@ -220,6 +296,31 @@ public class MainActivity extends AppCompatActivity{
 //        arrayAdapter.addAll(arrayData);
 //        arrayAdapter.notifyDataSetChanged();
         return lastresult;
+    }
+
+    public void getBUSDatabase(){
+        System.out.println("getBUSDatabase들어옴");
+        Cursor iCursor = savebusdbopenhelper.sortColumn();
+        Log.d("showDatabase", "DB Size: " + iCursor.getCount());
+        busarrayData.clear();
+        busarrayIndex.clear();
+        while(iCursor.moveToNext()){
+            String tempIndex = iCursor.getString(iCursor.getColumnIndex("_id"));
+            String tempStationid = iCursor.getString(iCursor.getColumnIndex("stationid"));
+            String tempBusid = iCursor.getString(iCursor.getColumnIndex("busid"));
+            String tempOrd = iCursor.getString(iCursor.getColumnIndex("ord"));
+            String tempArsid = iCursor.getString(iCursor.getColumnIndex("arsid"));
+            String tempBusnumber = iCursor.getString(iCursor.getColumnIndex("busnumber"));
+
+            String result = tempIndex +"  " + tempStationid + "  " + tempBusid + "  " + tempOrd + "  " + tempArsid + "  " + tempBusnumber;
+            lastresult += result;
+            lastresult += "\n";
+            busarrayData.add(result);
+            busarrayIndex.add(tempIndex);
+        }
+        arrayAdapter.clear();
+        arrayAdapter.addAll(busarrayData);
+        arrayAdapter.notifyDataSetChanged();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -393,19 +494,97 @@ public class MainActivity extends AppCompatActivity{
                 laststationdbopenhelper.insertColumn(id, dailytype, updowntype, arrtime, deptime);
             }
             //laststationdbopenhelper.insertColumn(id, dailytype, updowntype, arr.get(0).toString(), dep.get(0).toString());
-            result = getDatabase(sort);
+            result = getDatabase("subwaystationid");
             System.out.println(result);
+        }
+    };
+
+    final Handler savebushandler = new Handler()
+    {
+        public void handleMessage(Message msg)
+        {
+            savebusdbopenhelper.open();
+            System.out.println("Arsid=" + Arsid);
+            savebusdbopenhelper.insertColumn(StationID, BusID, Ord, Arsid, inputbusnumber);
+            getBUSDatabase();
+        }
+    };
+
+    private AdapterView.OnItemClickListener onClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Log.e("On Click", "position = " + position);
+            nowIndex = Long.parseLong(busarrayIndex.get(position));
+            Log.e("On Click", "nowIndex = " + nowIndex);
+            Log.e("On Click", "Data: " + busarrayData.get(position));
+            String[] tempData = busarrayData.get(position).split("\\s+");
+            System.out.println("tempData는" + tempData);
+            Log.e("On Click", "Split Result = " + tempData);
+            StationID = tempData[1].trim();
+            BusID = tempData[2].trim();
+            Ord = tempData[3].trim();
+            Arsid= tempData[4].trim();
+            inputbusnumber = tempData[5].trim();
+            System.out.println("StationID "+StationID);
+            System.out.println("BusID "+BusID);
+            System.out.println("Ord "+Ord);
+            System.out.println("Arsid "+Arsid);
+            System.out.println("inputbusnumber "+inputbusnumber);
+            busbutton.performClick();
+        }
+    };
+
+    private AdapterView.OnItemLongClickListener longClickListener = new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            Log.d("Long Click", "position = " + position);
+            nowIndex = Long.parseLong(busarrayIndex.get(position));
+            String[] nowData = busarrayData.get(position).split("\\s+");
+            System.out.println("nowData는"+ nowData);
+            String viewData = nowData[0] + ", " + nowData[1] + ", " + nowData[2] + ", " + nowData[3];
+            AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+            dialog.setTitle("데이터 삭제")
+                    .setMessage("해당 데이터를 삭제 하시겠습니까?" + "\n" + viewData)
+                    .setPositiveButton("네", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(MainActivity.this, "데이터를 삭제했습니다.", Toast.LENGTH_SHORT).show();
+                            savebusdbopenhelper.deleteColumn(nowIndex);
+                            getBUSDatabase();
+                        }
+                    })
+                    .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(MainActivity.this, "삭제를 취소했습니다.", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .create()
+                    .show();
+            return false;
         }
     };
 
     public void mOnClick(View v){
         hideKeyboard();
         switch(v.getId()) {
-            case R.id.subwaylastbutton:
+            case R.id.savebus:
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        id = stationid.getText().toString();
+
+                        Message msg = savebushandler.obtainMessage();
+                        savebushandler.sendMessage(msg);
+                    }
+                }).start();
+                break;
+
+
+            case R.id.subwaylastbutton:
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                id = stationid.getText().toString();
                         dailytype= daily.getText().toString();
                         updowntype = updown.getText().toString();
                         subwaylaststation.LastArriveManager(id, dailytype, updowntype);
@@ -531,10 +710,10 @@ public class MainActivity extends AppCompatActivity{
                             bus = inputbusnumber + "버스 "+busarrive.getoutput();
                         }
 
-
                     ArrayList output = new ArrayList<>();
+                        System.out.println("arsid는"+Arsid);
                         output = allbusarrive.getAllBusArrive(Arsid);
-
+                        System.out.println("output은" + output);
                         buses="";
                         for(int i = 0; i < output.size();i++){
                             buses += output.get(i).toString();
@@ -560,6 +739,8 @@ public class MainActivity extends AppCompatActivity{
                         subwayhandler2.removeMessages(0);
                         subwayhandler3.removeMessages(0);
                         subwayhandler3.removeMessages(0);
+
+            //            if();
 
                         ArrayList subwayoutput = new ArrayList<>();
                         subwayarrive.SubwayArriveManager(inputsubwaystationname, stationline, directioninfo);

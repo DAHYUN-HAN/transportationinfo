@@ -18,14 +18,53 @@ public class SubwayNameList {
     ArrayList statnNm = new ArrayList<>();
 
     ArrayList subwayNameList = new ArrayList<>();
-
+    int i = 0;
     ArrayList getSubwayList(String stationline) {
         System.out.println("getSubwayList 들어옴");
         SubwayListManager(stationline);
+        if(stationline.equals("1호선")) {
+            statnNm.add("광명");
+            statnNm.add("서동탄");
+            i=2;
+        }
+        else if(stationline.equals("6호선")) {
+            statnNm.remove("응암(하선-종착)");
+        }
+        else if(stationline.equals("9호선")) {
+            statnNm.add("삼전");
+            statnNm.add("석촌고분");
+            statnNm.add("석촌");
+            statnNm.add("송파나루");
+            statnNm.add("한성백제");
+            statnNm.add("올림픽공원");
+            statnNm.add("둔촌오륜");
+            statnNm.add("중앙보훈병원");
+            i=8;
+        }
+        else if(stationline.equals("경의중앙선")) {
+            statnNm.add("지평");
+            i=1;
+        }
+        else if(stationline.equals("경춘선")) {
+            statnNm.add("청량리");
+            statnNm.add("회기");
+            statnNm.add("중랑");
+            i=3;
+        }
+        else if(stationline.equals("수인선")) {
+            statnNm.add("인하대");
+            statnNm.add("숭의");
+            statnNm.add("신포");
+            statnNm.add("인천");
+            i=4;
+        }
         return statnNm;
     }
 
     ArrayList getSubwayID() {
+        for(int k = 0; k < i; k++) {
+            subwayId.add("null");
+        }
         return subwayId;
     }
 
@@ -65,6 +104,7 @@ public class SubwayNameList {
                         else if(tag.equals("statnNm")) {
                             xpp.next();
                             statnNm.add(xpp.getText());
+
                         }
 
                         break;
