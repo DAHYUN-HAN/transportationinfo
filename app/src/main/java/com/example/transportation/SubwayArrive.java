@@ -35,12 +35,13 @@ public class SubwayArrive {
 
 
         System.out.println("outputarray 크기" + outputarray.size());
-        while(outputarray.size() == 0){
+       // while(outputarray.size() == 0){
 
             String name = URLEncoder.encode(inputname);
 
             String queryUrl = "http://swopenapi.seoul.go.kr/api/subway/" + key +
                     "/xml/realtimeStationArrival/0/20/" + name;
+            System.out.println(queryUrl);
 
             try {
                 URL url = new URL(queryUrl);
@@ -85,7 +86,7 @@ public class SubwayArrive {
             }
             System.out.println("outputarray 크기" + outputarray.size());
             System.out.println("outputarray=" + outputarray);
-        }
+    //    }
 
         if(!check) {
             output = "방향을 잘못 입력하였습니다. 확인 후 다시 시도하세요.";

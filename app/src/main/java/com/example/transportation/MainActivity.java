@@ -2,7 +2,9 @@ package com.example.transportation;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Adapter;
@@ -32,7 +34,10 @@ public class MainActivity extends AppCompatActivity{
     InputMethodManager imm;
 
     EditText inputbus;
-    TextView inputbusarriveoutput, allbusarriveoutput, subwayarriveoutput, inputstation, inputsubwaystation;
+    EditText stationid, daily, updown;
+    TextView inputbusarriveoutput, allbusarriveoutput, subwayarriveoutput, inputstation, inputsubwaystation, subwaylastarrive;
+
+    String lastresult="", result;
 
     String bus;
     String buses;
@@ -40,6 +45,8 @@ public class MainActivity extends AppCompatActivity{
     BusArrive busarrive = new BusArrive();
     AllBusArrive allbusarrive = new AllBusArrive();
     SubwayArrive subwayarrive = new SubwayArrive();
+
+    SubwayLastStation subwaylaststation = new SubwayLastStation();
 
     String directioninfo="";
 
@@ -49,14 +56,33 @@ public class MainActivity extends AppCompatActivity{
 
     String StationID, Ord, Arsid, subwaystationname;
 
+    String subwaylast;
+
     Button busbutton, subwaybutton;
 
     int bustime1, bustime2, subwaytime1, subwaytime2, x;
+
+    private LastStationDBOpenHelper laststationdbopenhelper;
+
+    String sort = "subwaystationid";
+    int size;
+    String arrtime, deptime;
+
+    ArrayList arr;
+    ArrayList dep;
+
+    String id;
+    String dailytype;
+    String updowntype;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        stationid=(EditText)findViewById(R.id.stationid);
+        daily=(EditText)findViewById(R.id.daily);
+        updown=(EditText)findViewById(R.id.updown);
 
         inputbus=(EditText)findViewById(R.id.inputbus);
         inputstation=(TextView)findViewById(R.id.inputstation);
@@ -66,7 +92,13 @@ public class MainActivity extends AppCompatActivity{
         inputsubwaystation=(TextView)findViewById(R.id.inputsubwaystation);
         subwayarriveoutput=(TextView)findViewById(R.id.subwayarriveoutput);
 
+        subwaylastarrive=(TextView)findViewById(R.id.subwaylastarrive);
+
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        laststationdbopenhelper = new LastStationDBOpenHelper(this);
+        laststationdbopenhelper.open();
+        laststationdbopenhelper.create();
 
         inputbus.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -156,6 +188,38 @@ public class MainActivity extends AppCompatActivity{
 
             }
         });
+    }
+
+    public String getDatabase(String sort){
+        System.out.println("getDatabase들어옴");
+        Cursor iCursor = laststationdbopenhelper.sortColumn(sort);
+        Log.d("showDatabase", "DB Size: " + iCursor.getCount());
+ //       arrayData.clear();
+//        arrayIndex.clear();
+        while(iCursor.moveToNext()){
+            String tempIndex = iCursor.getString(iCursor.getColumnIndex("_id"));
+            String tempSubwayStationId = iCursor.getString(iCursor.getColumnIndex("subwaystationid"));
+//            tempID = setTextLength(tempID,10);
+            String tempDaily = iCursor.getString(iCursor.getColumnIndex("dailytype"));
+//            tempName = setTextLength(tempName,10);
+            String tempUpDown = iCursor.getString(iCursor.getColumnIndex("updowntype"));
+//            tempAge = setTextLength(tempAge,10);
+            String tempArrtime = iCursor.getString(iCursor.getColumnIndex("arrtime"));
+//            tempGender = setTextLength(tempGender,10);
+            String tempDeptime = iCursor.getString(iCursor.getColumnIndex("deptime"));
+
+            String result = tempIndex +", " + tempSubwayStationId + ", " + tempDaily + ", " + tempUpDown + ", " + tempArrtime + ", " + tempDeptime;
+            lastresult += result;
+            lastresult += "\n";
+
+//            String Result = tempID + tempName + tempAge + tempGender;
+//            arrayData.add(result);
+//            arrayIndex.add(tempIndex);
+        }
+//        arrayAdapter.clear();
+//        arrayAdapter.addAll(arrayData);
+//        arrayAdapter.notifyDataSetChanged();
+        return lastresult;
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -318,9 +382,65 @@ public class MainActivity extends AppCompatActivity{
         }
     };
 
+    final Handler lastsubwayhandler = new Handler()
+    {
+        public void handleMessage(Message msg)
+        {
+            laststationdbopenhelper.open();
+            for(int i = 0; i < size; i++) {
+                arrtime = arr.get(i).toString();
+                deptime = dep.get(i).toString();
+                laststationdbopenhelper.insertColumn(id, dailytype, updowntype, arrtime, deptime);
+            }
+            //laststationdbopenhelper.insertColumn(id, dailytype, updowntype, arr.get(0).toString(), dep.get(0).toString());
+            result = getDatabase(sort);
+            System.out.println(result);
+        }
+    };
+
     public void mOnClick(View v){
         hideKeyboard();
         switch(v.getId()) {
+            case R.id.subwaylastbutton:
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        id = stationid.getText().toString();
+                        dailytype= daily.getText().toString();
+                        updowntype = updown.getText().toString();
+                        subwaylaststation.LastArriveManager(id, dailytype, updowntype);
+
+                        arr = new ArrayList<>();
+                        dep = new ArrayList<>();
+
+                        arr = subwaylaststation.getArrTime();
+                        dep = subwaylaststation.getdepTime();
+
+                        System.out.println(arr);
+                        System.out.println(dep);
+
+                        size=arr.size();
+                        if(arr.size()>dep.size()) {
+                            size = dep.size();
+                        }
+                        else {
+                            size = arr.size();
+                        }
+
+                        Message msg = lastsubwayhandler.obtainMessage();
+                        lastsubwayhandler.sendMessage(msg);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                subwaylastarrive.setText(result);
+                            }
+                        });
+                    }
+                }).start();
+                break;
+
+
             case R.id.busnumbersearchbutton:
                 new Thread(new Runnable() {
                     @Override
