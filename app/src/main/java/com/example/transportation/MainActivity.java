@@ -9,10 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ArrayAdapter;
@@ -23,18 +21,15 @@ import android.os.Handler;
 import android.os.Message;
 
 import java.util.ArrayList;
-import android.widget.Button;
 
 import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
 
 import android.content.Intent;
 
-import android.os.CountDownTimer;
 import android.widget.Toast;
 
 import java.util.Date;
-import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -44,7 +39,7 @@ public class MainActivity extends AppCompatActivity{
     EditText stationid, daily, updown;
     TextView inputbusarriveoutput, allbusarriveoutput, subwayarriveoutput, inputstation, inputsubwaystation, subwaylastarrive;
 
-    String lastresult="", result;
+    String lastresult="", subwayresult="";
 
     String bus;
     String buses;
@@ -72,6 +67,7 @@ public class MainActivity extends AppCompatActivity{
 
     private LastStationDBOpenHelper laststationdbopenhelper;
     private SaveBusDBOpenHelper savebusdbopenhelper;
+    private SaveSubwayDBOpenHelper savesubwaydbopenhelper;
 
     int size;
     String arrtime, deptime;
@@ -87,6 +83,8 @@ public class MainActivity extends AppCompatActivity{
     static ArrayList<String> busarrayData = new ArrayList<String>();
     static ArrayList<Integer> subwayarrtimedata = new ArrayList<Integer>();
     static ArrayList<Integer> subwaydeptimedata = new ArrayList<Integer>();
+    static ArrayList<String> subwayarrayIndex =  new ArrayList<String>();
+    static ArrayList<String> subwayarrayData = new ArrayList<String>();
 
     String subwaystationid;
     String[][] subwayName = {
@@ -130,7 +128,7 @@ public class MainActivity extends AppCompatActivity{
             {"신분당선","광교", "하행", "SUB1922"}//상행
     };
 
-    ArrayAdapter<String> arrayAdapter;
+    ArrayAdapter<String> busarrayAdapter;
 
     String dailyCode, UDCode;
     long mNow;
@@ -158,9 +156,9 @@ public class MainActivity extends AppCompatActivity{
 
         subwaylastarrive=(TextView)findViewById(R.id.subwaylastarrive);
 
-        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+        busarrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         ListView listView = (ListView) findViewById(R.id.savebusinfo);
-        listView.setAdapter(arrayAdapter);
+        listView.setAdapter(busarrayAdapter);
         listView.setOnItemClickListener(onClickListener);
         listView.setOnItemLongClickListener(longClickListener);
 
@@ -173,6 +171,12 @@ public class MainActivity extends AppCompatActivity{
         savebusdbopenhelper = new SaveBusDBOpenHelper(this);
         savebusdbopenhelper.open();
         savebusdbopenhelper.create();
+
+        savesubwaydbopenhelper = new SaveSubwayDBOpenHelper(this);
+        savesubwaydbopenhelper.open();
+        savesubwaydbopenhelper.create();
+
+
 
         inputbus.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -270,8 +274,8 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    public void getSUBWAYDatabase(){
-        System.out.println("getSubwayDatabase들어옴");
+    public void getLASTSUBWAYDatabase(){
+        System.out.println("getLASTSubwayDatabase들어옴");
         Cursor iCursor = laststationdbopenhelper.exist(subwaystationid, dailyCode, UDCode);
         Log.d("showDatabase", "DB Size: " + iCursor.getCount());
 
@@ -387,7 +391,6 @@ public class MainActivity extends AppCompatActivity{
             return tempSUBWAYArrivetime;
         }
     }
-
     public void getBUSDatabase(){
         System.out.println("getBUSDatabase들어옴");
         Cursor iCursor = savebusdbopenhelper.sortColumn();
@@ -408,9 +411,31 @@ public class MainActivity extends AppCompatActivity{
             busarrayData.add(result);
             busarrayIndex.add(tempIndex);
         }
-        arrayAdapter.clear();
-        arrayAdapter.addAll(busarrayData);
-        arrayAdapter.notifyDataSetChanged();
+        busarrayAdapter.clear();
+        busarrayAdapter.addAll(subwayarrayData);
+        busarrayAdapter.notifyDataSetChanged();
+    }
+
+    public void getSUBWAYDatabase(){
+        System.out.println("getSUBWAYDatabase들어옴");
+        Cursor iCursor = savesubwaydbopenhelper.sortColumn();
+        Log.d("showDatabase", "DB Size: " + iCursor.getCount());
+        subwayarrayData.clear();
+        subwayarrayIndex.clear();
+        while(iCursor.moveToNext()){
+            String tempIndex = iCursor.getString(iCursor.getColumnIndex("_id"));
+            String tempSubwayline = iCursor.getString(iCursor.getColumnIndex("subwayline"));
+            String tempSubwaydirection = iCursor.getString(iCursor.getColumnIndex("subwaydirection"));
+            String tempSubwaystation = iCursor.getString(iCursor.getColumnIndex("subwaystation"));
+            String result = tempIndex +"," + tempSubwayline + "," + tempSubwaydirection + "," + tempSubwaystation;
+            subwayresult += result;
+            subwayresult += "\n";
+            subwayarrayData.add(result);
+            subwayarrayIndex.add(tempIndex);
+        }
+ //       busarrayAdapter.clear();
+  //      busarrayAdapter.addAll(subwayarrayData);
+   //     busarrayAdapter.notifyDataSetChanged();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -583,7 +608,7 @@ public class MainActivity extends AppCompatActivity{
                 deptime = dep.get(i).toString();
                 laststationdbopenhelper.insertColumn(subwaystationid, dailyCode, UDCode, arrtime, deptime);
             }
-            getSUBWAYDatabase();
+            getLASTSUBWAYDatabase();
             SUBWAYArrivetime = getSUBWAYArrive();
 
             subwaytime1 = SUBWAYArrivetime.get(0);
@@ -607,6 +632,16 @@ public class MainActivity extends AppCompatActivity{
             System.out.println("Arsid=" + Arsid);
             savebusdbopenhelper.insertColumn(StationID, BusID, Ord, Arsid, inputbusnumber, inputstationname);
             getBUSDatabase();
+        }
+    };
+
+    final Handler savesubwayhandler = new Handler()
+    {
+        public void handleMessage(Message msg)
+        {
+            savesubwaydbopenhelper.open();
+            savesubwaydbopenhelper.insertColumn(inputstationline, subwaystationname, directioninfo);
+            getSUBWAYDatabase();
         }
     };
 
@@ -920,7 +955,7 @@ public class MainActivity extends AppCompatActivity{
                                 lastsubwayhandler.sendMessage(msg);
                             }
                             else{
-                                getSUBWAYDatabase();
+                                getLASTSUBWAYDatabase();
                                 SUBWAYArrivetime = getSUBWAYArrive();
 
                                 subwaytime1 = SUBWAYArrivetime.get(0);
@@ -1003,6 +1038,9 @@ public class MainActivity extends AppCompatActivity{
                                     subway = subwaystationname + "역 " + inputstationline + " " + subwayarrive.getoutput();
                                 }
                             }
+
+                            Message msg = savesubwayhandler.obtainMessage();
+                            savesubwayhandler.sendMessage(msg);
 
                             runOnUiThread(new Runnable() {
                                 @Override
