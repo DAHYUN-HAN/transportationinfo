@@ -33,6 +33,9 @@ import android.content.Intent;
 import android.os.CountDownTimer;
 import android.widget.Toast;
 
+import java.util.Date;
+import java.text.SimpleDateFormat;
+
 public class MainActivity extends AppCompatActivity{
 
     InputMethodManager imm;
@@ -76,18 +79,66 @@ public class MainActivity extends AppCompatActivity{
     ArrayList arr;
     ArrayList dep;
 
-    String id;
-    String dailytype;
-    String updowntype;
+    boolean start;
+    boolean checkarrtime = false;
 
     long nowIndex;
     static ArrayList<String> busarrayIndex =  new ArrayList<String>();
     static ArrayList<String> busarrayData = new ArrayList<String>();
+    static ArrayList<Integer> subwayarrtimedata = new ArrayList<Integer>();
+    static ArrayList<Integer> subwaydeptimedata = new ArrayList<Integer>();
 
-    ArrayList subwayName = new ArrayList<>();
+    String subwaystationid;
+    String[][] subwayName = {
+            {"1호선", "소요산", "하행", "SUB100"},//하행
+            {"1호선","인천", "상행", "SUB160"},//상행
+            {"1호선","광명", "둘다", "SUB1175"},//
+            {"1호선","서동탄", "둘다", "SUB1187"},
+            {"1호선","신창", "상행", "SUB1416"},//상행
+            {"2호선","까치산", "외선", "SUB264"},//외선
+            {"2호선","신설동", "내선", "SUB253"},
+            {"3호선","대화", "하행", "SUB310"},
+            {"3호선","오금", "상행", "SUB352"},
+            {"4호선","오이도", "둘다", "SUB456"},
+            {"4호선","당고개", "하행", "SUB409"},
+            {"5호선","방화", "하행", "SUB510"},
+            {"5호선","마천", "상행", "SUB575"},
+            {"5호선","상일동", "상행", "SUB553"},
+            {"6호선","봉화산", "상행", "SUB647"},//상행
+            {"7호선","장암", "하행", "SUB709"},//하행
+            {"7호선","부평구청", "상행", "SUB759"},
+            {"8호선","암사", "하행", "SUB810"},//하행
+            {"8호선","모란", "상행", "SUB826"},
+            {"9호선","개화", "하행", "SUB901"},//하행
+            {"경의중앙선","문산", "하행", "SUB1629"},//하행
+            {"경의중앙선","지평", "둘다", "SUB1299"},
+            {"경의중앙선","용문", "상행", "SUB1300"},//상행
+            {"경춘선","청량리", "둘다", "SUB1806"},
+            {"경춘선","회기", "둘다", "SUB1317"},
+            {"경춘선","중랑", "둘다", "SUB1316"},
+            {"경춘선","춘천", "상행", "SUB1830"},//상행
+            {"공항철도","서울", "상행", "SUB4001"},//상행
+            {"공항철도","인천공항2터미널", "하행", "SUB4013"},//하행
+            {"분당선","왕십리", "하행", "SUB1510"},//하행
+            {"분당선","수원", "상행", "SUB1545"},//상행
+            {"수인선","오이도", "둘다", "SUB11121"},//둘다
+            {"수인선","인천", "둘다", "SUB11134"},
+            {"수인선","신포", "둘다", "SUB11133"},
+            {"수인선","숭의", "둘다", "SUB11132"},
+            {"수인선","인하대", "둘다", "SUB11131"},
+            {"신분당선","강남", "하행", "SUB1910"},//하행
+            {"신분당선","광교", "하행", "SUB1922"}//상행
+    };
 
     ArrayAdapter<String> arrayAdapter;
 
+    String dailyCode, UDCode;
+    long mNow;
+    Date mDate;
+
+    Spinner directionspinner;
+
+    static ArrayList<Integer> SUBWAYArrivetime = new ArrayList<Integer>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -163,60 +214,17 @@ public class MainActivity extends AppCompatActivity{
         lineadapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, subwayline);
         linespinner.setAdapter(lineadapter);
 
-        String[][] subwayName = {
-                {"1호선", "소요산"},
-                {"1호선","인천"},
-                {"1호선","광명"},
-                {"1호선","서동탄"},
-                {"1호선","신창"},
-                {"2호선","까치산"},
-                {"2호선","신설동"},
-                {"3호선","대화"},
-                {"3호선","오금"},
-                {"4호선","오이도"},
-                {"4호선","당고개"},
-                {"5호선","방화"},
-                {"5호선","마천"},
-                {"5호선","상일동"},
-                {"6호선","응암"},
-                {"6호선","봉화산"},//상행
-                {"7호선","장암"},//하행
-                {"7호선","부평구청"},
-                {"8호선","암사"},//하행
-                {"8호선","모란"},
-                {"9호선","개화"},//하행
-                {"9호선","삼전"},
-                {"9호선","석촌고분"},
-                {"9호선","석촌"},
-                {"9호선","송파나루"},
-                {"9호선","한성백제"},
-                {"9호선","올림픽공원"},
-                {"9호선","둔촌오륜"},
-                {"9호선","중앙보훈병원"},
-                {"경의중앙선","문산"},//하행
-                {"경의중앙선","지평"},
-                {"경의중앙선","용문"},//상행
-                {"경춘선","청량리"},
-                {"경춘선","회기"},
-                {"경춘선","중랑"},
-                {"경춘선","춘천"},//상행
-                {"공항철도","서울"},//상행
-                {"공항철도","인천공항2터미널"},//하행
-                {"분당선","왕십리"},//하행
-                {"분당선","수원"},//상행
-                {"수인선","오이도"},//상행
-                {"수인선","인천"},
-                {"수인선","신포"},
-                {"수인선","숭의"},
-                {"수인선","인하대"},
-                {"신분당선","강남"},//하행
-                {"신분당선","광교"}//상행
-        };
+        directionspinner = (Spinner) findViewById(R.id.directionspinner);
 
-        linespinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        ArrayAdapter<String> directionadapter; // ArrayAdapter <String>형의 변수 선언
+        directionadapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, direction);
+        directionspinner.setAdapter(directionadapter);
+
+            linespinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
+                directionspinner.setSelection(0);
                 inputstationline = subwayline.get(position).toString();
 
                 if (inputstationline.equals("2호선")) {
@@ -239,13 +247,6 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        Spinner directionspinner = (Spinner) findViewById(R.id.directionspinner);
-
-        ArrayAdapter<String> directionadapter; // ArrayAdapter <String>형의 변수 선언
-        directionadapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, direction);
-        directionspinner.setAdapter(directionadapter);
-
-
         directionspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -254,6 +255,7 @@ public class MainActivity extends AppCompatActivity{
                 if(directioninfo != "방향") {
                     inputsubwaystation.setEnabled(true);
                 }
+                start = true;
             }
 
             @Override
@@ -262,40 +264,128 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+        busbutton = (Button) findViewById(R.id.busbutton);
+
         getBUSDatabase();
 
     }
 
-    public String getDatabase(String sort){
-        System.out.println("getDatabase들어옴");
-        Cursor iCursor = laststationdbopenhelper.sortColumn(sort);
+    public void getSUBWAYDatabase(){
+        System.out.println("getSubwayDatabase들어옴");
+        Cursor iCursor = laststationdbopenhelper.exist(subwaystationid, dailyCode, UDCode);
         Log.d("showDatabase", "DB Size: " + iCursor.getCount());
- //       arrayData.clear();
-//        arrayIndex.clear();
-        while(iCursor.moveToNext()){
-            String tempIndex = iCursor.getString(iCursor.getColumnIndex("_id"));
-            String tempSubwayStationId = iCursor.getString(iCursor.getColumnIndex("subwaystationid"));
-//            tempID = setTextLength(tempID,10);
-            String tempDaily = iCursor.getString(iCursor.getColumnIndex("dailytype"));
-//            tempName = setTextLength(tempName,10);
-            String tempUpDown = iCursor.getString(iCursor.getColumnIndex("updowntype"));
-//            tempAge = setTextLength(tempAge,10);
-            String tempArrtime = iCursor.getString(iCursor.getColumnIndex("arrtime"));
-//            tempGender = setTextLength(tempGender,10);
+
+        while(iCursor.moveToNext()) {
+            String temparrtime = iCursor.getString(iCursor.getColumnIndex("arrtime"));
             String tempDeptime = iCursor.getString(iCursor.getColumnIndex("deptime"));
 
-            String result = tempIndex +", " + tempSubwayStationId + ", " + tempDaily + ", " + tempUpDown + ", " + tempArrtime + ", " + tempDeptime;
-            lastresult += result;
-            lastresult += "\n";
-
-//            String Result = tempID + tempName + tempAge + tempGender;
-//            arrayData.add(result);
-//            arrayIndex.add(tempIndex);
+            subwayarrtimedata.add(Integer.parseInt(temparrtime));
+            subwaydeptimedata.add(Integer.parseInt(tempDeptime));
         }
-//        arrayAdapter.clear();
-//        arrayAdapter.addAll(arrayData);
-//        arrayAdapter.notifyDataSetChanged();
-        return lastresult;
+
+        if(subwayarrtimedata.get(0) == 0) {
+            checkarrtime = false;
+        }
+        else{
+            checkarrtime = true;
+        }
+    }
+
+    public ArrayList getSUBWAYArrive(){
+        int firstarr, secondarr, vhour, vminute, vsecond, a1hour, a1minute, a1second, a2hour, a2minute, a2second, finalsecond1, finalsecond2;
+        ArrayList<Integer> tempSUBWAYArrivetime = new ArrayList<Integer>();
+        mNow = System.currentTimeMillis();
+        mDate = new Date(mNow);
+        String[] time = mDate.toString().split(" ");
+        String[] nowtime = time[3].split(":");
+        int viewtime = Integer.parseInt(nowtime[0]+nowtime[1]+nowtime[2]);
+        System.out.println("viewtime=" + viewtime);
+        int i;
+        System.out.println("checkarrtime은 " + checkarrtime);
+        if(checkarrtime) {
+            for(i = 0; i < subwayarrtimedata.size(); i++) {
+                System.out.println(subwayarrtimedata.get(i));
+                if(viewtime<subwayarrtimedata.get(i)) {
+                    break;
+                }
+                else {
+                    continue;
+                }
+            }
+
+            System.out.println("뒤에 올 시간 = " +subwayarrtimedata.get(i) + ", " + subwayarrtimedata.get(i+1));
+            vhour = viewtime/10000;
+            vminute = viewtime%10000;
+            vsecond = vminute%100;
+            vminute = vminute/100;
+            vsecond = (vhour*3600)+(vminute*60)+vsecond;
+            System.out.println("vsecond = " + vsecond);
+            firstarr = subwayarrtimedata.get(i);
+            a1hour = firstarr/10000;
+            a1minute = firstarr%10000;
+            a1second = a1minute%100;
+            a1minute = a1minute/100;
+            a1second = (a1hour*3600)+(a1minute*60)+a1second;
+            System.out.println("a1second = " + a1second);
+            finalsecond1 = a1second-vsecond;
+            System.out.println("finalsecond1=" + finalsecond1);
+            secondarr = subwayarrtimedata.get(i+1);
+            a2hour = secondarr/10000;
+            a2minute = secondarr%10000;
+            a2second = a2minute%100;
+            a2minute = a2minute/100;
+            a2second = (a2hour*3600)+(a2minute*60)+a2second;
+            System.out.println("asecond = " + a2second);
+            finalsecond2 = a2second-vsecond;
+            System.out.println("finalsecond2=" + finalsecond2);
+
+            tempSUBWAYArrivetime.add(finalsecond1);
+            tempSUBWAYArrivetime.add(finalsecond2);
+            return tempSUBWAYArrivetime;
+        }
+        else {
+            System.out.println("deptime쪽 들어옴");
+            for(i = 0; i < subwaydeptimedata.size(); i++) {
+
+                System.out.println(subwaydeptimedata.get(i));
+                if(viewtime<subwaydeptimedata.get(i)) {
+                    break;
+                }
+                else {
+                    continue;
+                }
+            }
+
+            System.out.println("뒤에 올 시간 = " +subwaydeptimedata.get(i) + ", " + subwaydeptimedata.get(i+1));
+            vhour = viewtime/10000;
+            vminute = viewtime%10000;
+            vsecond = vminute%100;
+            vminute = vminute/100;
+            vsecond = (vhour*3600)+(vminute*60)+vsecond;
+            System.out.println("vsecond = " + vsecond);
+            firstarr = subwaydeptimedata.get(i);
+            a1hour = firstarr/10000;
+            a1minute = firstarr%10000;
+            a1second = a1minute%100;
+            a1minute = a1minute/100;
+            a1second = (a1hour*3600)+(a1minute*60)+a1second;
+            System.out.println("a1second = " + a1second);
+            finalsecond1 = a1second-vsecond;
+            System.out.println("finalsecond1=" + finalsecond1);
+            secondarr = subwaydeptimedata.get(i+1);
+            a2hour = secondarr/10000;
+            a2minute = secondarr%10000;
+            a2second = a2minute%100;
+            a2minute = a2minute/100;
+            a2second = (a2hour*3600)+(a2minute*60)+a2second;
+            System.out.println("asecond = " + a2second);
+            finalsecond2 = a2second-vsecond;
+            System.out.println("finalsecond2=" + finalsecond2);
+
+            tempSUBWAYArrivetime.add(finalsecond1);
+            tempSUBWAYArrivetime.add(finalsecond2);
+            return tempSUBWAYArrivetime;
+        }
     }
 
     public void getBUSDatabase(){
@@ -311,8 +401,8 @@ public class MainActivity extends AppCompatActivity{
             String tempOrd = iCursor.getString(iCursor.getColumnIndex("ord"));
             String tempArsid = iCursor.getString(iCursor.getColumnIndex("arsid"));
             String tempBusnumber = iCursor.getString(iCursor.getColumnIndex("busnumber"));
-
-            String result = tempIndex +"  " + tempStationid + "  " + tempBusid + "  " + tempOrd + "  " + tempArsid + "  " + tempBusnumber;
+            String tempStainname = iCursor.getString(iCursor.getColumnIndex("stationname"));
+            String result = tempIndex +"," + tempStationid + "," + tempBusid + "," + tempOrd + "," + tempArsid + "," + tempBusnumber + "," +tempStainname;
             lastresult += result;
             lastresult += "\n";
             busarrayData.add(result);
@@ -342,6 +432,7 @@ public class MainActivity extends AppCompatActivity{
                     stationline = data.getStringExtra("subwayid");
                     subwaybutton = (Button) findViewById(R.id.subwaybutton);
                     subwaybutton.setEnabled(true);
+                    start = true;
                     break;
 
                 case 3000:
@@ -349,7 +440,6 @@ public class MainActivity extends AppCompatActivity{
                     inputbus.setText(pickbusnumber);
                     inputbusnumber = pickbusnumber;
                     BusID = data.getStringExtra("busid");
-                    busbutton = (Button) findViewById(R.id.busbutton);
                     busbutton.setEnabled(true);
                     inputstation.setEnabled(true);
                     break;
@@ -491,11 +581,21 @@ public class MainActivity extends AppCompatActivity{
             for(int i = 0; i < size; i++) {
                 arrtime = arr.get(i).toString();
                 deptime = dep.get(i).toString();
-                laststationdbopenhelper.insertColumn(id, dailytype, updowntype, arrtime, deptime);
+                laststationdbopenhelper.insertColumn(subwaystationid, dailyCode, UDCode, arrtime, deptime);
             }
-            //laststationdbopenhelper.insertColumn(id, dailytype, updowntype, arr.get(0).toString(), dep.get(0).toString());
-            result = getDatabase("subwaystationid");
-            System.out.println(result);
+            getSUBWAYDatabase();
+            SUBWAYArrivetime = getSUBWAYArrive();
+
+            subwaytime1 = SUBWAYArrivetime.get(0);
+            subwaytime2 = SUBWAYArrivetime.get(1);
+
+            subwayhandler.removeMessages(0);
+            subwayhandler2.removeMessages(0);
+            subwayhandler3.removeMessages(0);
+            subwayhandler3.removeMessages(0);
+            Message msg2 = subwayhandler.obtainMessage();
+            subwayhandler.sendMessage(msg2);
+
         }
     };
 
@@ -505,7 +605,7 @@ public class MainActivity extends AppCompatActivity{
         {
             savebusdbopenhelper.open();
             System.out.println("Arsid=" + Arsid);
-            savebusdbopenhelper.insertColumn(StationID, BusID, Ord, Arsid, inputbusnumber);
+            savebusdbopenhelper.insertColumn(StationID, BusID, Ord, Arsid, inputbusnumber, inputstationname);
             getBUSDatabase();
         }
     };
@@ -517,7 +617,7 @@ public class MainActivity extends AppCompatActivity{
             nowIndex = Long.parseLong(busarrayIndex.get(position));
             Log.e("On Click", "nowIndex = " + nowIndex);
             Log.e("On Click", "Data: " + busarrayData.get(position));
-            String[] tempData = busarrayData.get(position).split("\\s+");
+            String[] tempData = busarrayData.get(position).split(",");
             System.out.println("tempData는" + tempData);
             Log.e("On Click", "Split Result = " + tempData);
             StationID = tempData[1].trim();
@@ -525,12 +625,19 @@ public class MainActivity extends AppCompatActivity{
             Ord = tempData[3].trim();
             Arsid= tempData[4].trim();
             inputbusnumber = tempData[5].trim();
+            subwaystationname = tempData[6].trim();
             System.out.println("StationID "+StationID);
             System.out.println("BusID "+BusID);
             System.out.println("Ord "+Ord);
             System.out.println("Arsid "+Arsid);
             System.out.println("inputbusnumber "+inputbusnumber);
+
+            inputbus.setText(inputbusnumber);
+            inputstation.setText(subwaystationname);
+
+            busbutton.setEnabled(true);
             busbutton.performClick();
+
         }
     };
 
@@ -579,7 +686,7 @@ public class MainActivity extends AppCompatActivity{
                 }).start();
                 break;
 
-
+/*
             case R.id.subwaylastbutton:
                         new Thread(new Runnable() {
                             @Override
@@ -619,7 +726,7 @@ public class MainActivity extends AppCompatActivity{
                 }).start();
                 break;
 
-
+*/
             case R.id.busnumbersearchbutton:
                 new Thread(new Runnable() {
                     @Override
@@ -702,7 +809,6 @@ public class MainActivity extends AppCompatActivity{
                         }
                         else {
 
-
                             handler.removeMessages(0);
                             handler2.removeMessages(0);
                             handler3.removeMessages(0);
@@ -735,41 +841,90 @@ public class MainActivity extends AppCompatActivity{
                     @Override
                     public void run() {
                         x=0;
-                        subwayhandler.removeMessages(0);
-                        subwayhandler2.removeMessages(0);
-                        subwayhandler3.removeMessages(0);
-                        subwayhandler3.removeMessages(0);
 
-            //            if();
+                        boolean apicheck = true;
+                        System.out.println(start);
+                        if(start) {
+                            System.out.println("start들어옴");
+                            for (int i = 0; i < 38; i++) {
+                                System.out.println("inputstationline" + inputstationline);
+                                System.out.println("subwaystationname" + subwaystationname);
+                                System.out.println("directioninfo" + directioninfo);
+                                System.out.println("subwayName[i][0]" + subwayName[i][0]);
+                                System.out.println("subwayName[i][1]" + subwayName[i][1]);
+                                System.out.println("subwayName[i][2]" + subwayName[i][2]);
 
-                        ArrayList subwayoutput = new ArrayList<>();
-                        subwayarrive.SubwayArriveManager(inputsubwaystationname, stationline, directioninfo);
+                                if (((subwayName[i][0].equals(inputstationline)) && (subwayName[i][1].equals(subwaystationname)))) {
+                                    System.out.println("첫번째 if 실행");
+                                    if (subwayName[i][2].equals("둘다")) {
+                                        System.out.println("둘다임");
+                                        apicheck = true;
+                                    } else if (subwayName[i][2] == directioninfo) {
+                                        System.out.println("똑같습니다.");
+                                        apicheck = true;
+                                    }
+                                    else {
+                                        break;
+                                    }
 
-                        subwayoutput = subwayarrive.getoutputarray();
-                        System.out.println("subwayoutput은" + subwayoutput);
+                                    subwaystationid = subwayName[i][3];
 
-                        if(subwayoutput.size() == 1) {
-                            if(subwayarrive.getcheck1()) {
-                                subwaytime1 = subwayarrive.getTime1();
+                                    mNow = System.currentTimeMillis();
+                                    mDate = new Date(mNow);
+                                    String[] time = mDate.toString().split(" ");
+                                    if(time[0].equals("Sun")) {dailyCode = "03";}
+                                    else if(time[0].equals("Sat")) {dailyCode = "02";}
+                                    else {dailyCode = "01";}
 
-                                subwayhandler.removeMessages(0);
-                                subwayhandler2.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                Message msg = subwayhandler4.obtainMessage();
-                                subwayhandler4.sendMessage(msg);
+                                    if (directioninfo == "상행" || directioninfo == "외선") {
+                                        UDCode = "U";
+                                    } else {
+                                        UDCode = "D";
+                                    }
+                                    i = 39;
+                                }
+
+                                else {
+                                    apicheck = false;
+                                }
+
                             }
-                            else {
-                                subway = subwaystationname + "역 " + inputstationline + " " + subwayarrive.getoutput();
-                            }
+                            start = false;
                         }
-                        else{
-                            boolean check2 = subwayarrive.getcheck1() && subwayarrive.getcheck2();
 
-                            if(check2) {
-                                //숫자
-                                subwaytime1 = subwayarrive.getTime1();
-                                subwaytime2 = subwayarrive.getTime2();
+                        if(apicheck) {
+                            System.out.println("공공api 들어옴");
+                            Cursor iCursor = laststationdbopenhelper.exist(subwaystationid, dailyCode, UDCode);
+                            Log.d("showDatabase", "DB Size: " + iCursor.getCount());
+                            if(iCursor.getCount()==0){
+                                subwaylaststation.LastArriveManager(subwaystationid, dailyCode, UDCode);
+
+                                arr = new ArrayList<>();
+                                dep = new ArrayList<>();
+
+                                arr = subwaylaststation.getArrTime();
+                                dep = subwaylaststation.getdepTime();
+
+                                System.out.println(arr);
+                                System.out.println(dep);
+
+                                size=arr.size();
+                                if(arr.size()>dep.size()) {
+                                    size = dep.size();
+                                }
+                                else {
+                                    size = arr.size();
+                                }
+
+                                Message msg = lastsubwayhandler.obtainMessage();
+                                lastsubwayhandler.sendMessage(msg);
+                            }
+                            else{
+                                getSUBWAYDatabase();
+                                SUBWAYArrivetime = getSUBWAYArrive();
+
+                                subwaytime1 = SUBWAYArrivetime.get(0);
+                                subwaytime2 = SUBWAYArrivetime.get(1);
 
                                 subwayhandler.removeMessages(0);
                                 subwayhandler2.removeMessages(0);
@@ -778,47 +933,90 @@ public class MainActivity extends AppCompatActivity{
                                 Message msg = subwayhandler.obtainMessage();
                                 subwayhandler.sendMessage(msg);
                             }
-                            else if(subwayarrive.getcheck1()){
-                                subwaytime1 = subwayarrive.getTime1();
-
-                                subwayhandler.removeMessages(0);
-                                subwayhandler2.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                Message msg = subwayhandler3.obtainMessage();
-                                subwayhandler3.sendMessage(msg);
-                            }
-                            else if(subwayarrive.getcheck2()){
-                                subwaytime2 = subwayarrive.getTime2();
-
-                                subwayhandler.removeMessages(0);
-                                subwayhandler2.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                Message msg = subwayhandler2.obtainMessage();
-                                subwayhandler2.sendMessage(msg);
-                            }
-                            else {
-                                subwayhandler.removeMessages(0);
-                                subwayhandler2.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                subwayhandler3.removeMessages(0);
-                                subway = subwaystationname + "역 " + inputstationline + " " + subwayarrive.getoutput();
-                            }
 
                         }
+                        else {
+                            System.out.println("실시간 api 시작");
+                            ArrayList subwayoutput = new ArrayList<>();
+                            subwayarrive.SubwayArriveManager(inputsubwaystationname, stationline, directioninfo);
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                subwayarriveoutput.setText(subway);
+                            subwayoutput = subwayarrive.getoutputarray();
+                            System.out.println("subwayoutput은" + subwayoutput);
+                            if(subwayoutput.size() == 0) {
+                                subwaybutton.performClick();
                             }
-                        });
+                            else if(subwayoutput.size() == 1) {
+                                if(subwayarrive.getcheck1()) {
+                                    subwaytime1 = subwayarrive.getTime1();
+
+                                    subwayhandler.removeMessages(0);
+                                    subwayhandler2.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    Message msg = subwayhandler4.obtainMessage();
+                                    subwayhandler4.sendMessage(msg);
+                                }
+                                else {
+                                    subway = subwaystationname + "역 " + inputstationline + " " + subwayarrive.getoutput();
+                                }
+                            }
+                            else{
+                                boolean check2 = subwayarrive.getcheck1() && subwayarrive.getcheck2();
+
+                                if(check2) {
+                                    //숫자
+                                    subwaytime1 = subwayarrive.getTime1();
+                                    subwaytime2 = subwayarrive.getTime2();
+
+                                    subwayhandler.removeMessages(0);
+                                    subwayhandler2.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    Message msg = subwayhandler.obtainMessage();
+                                    subwayhandler.sendMessage(msg);
+                                }
+                                else if(subwayarrive.getcheck1()){
+                                    subwaytime1 = subwayarrive.getTime1();
+
+                                    subwayhandler.removeMessages(0);
+                                    subwayhandler2.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    Message msg = subwayhandler3.obtainMessage();
+                                    subwayhandler3.sendMessage(msg);
+                                }
+                                else if(subwayarrive.getcheck2()){
+                                    subwaytime2 = subwayarrive.getTime2();
+
+                                    subwayhandler.removeMessages(0);
+                                    subwayhandler2.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    Message msg = subwayhandler2.obtainMessage();
+                                    subwayhandler2.sendMessage(msg);
+                                }
+                                else {
+                                    subwayhandler.removeMessages(0);
+                                    subwayhandler2.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    subwayhandler3.removeMessages(0);
+                                    subway = subwaystationname + "역 " + inputstationline + " " + subwayarrive.getoutput();
+                                }
+                            }
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    subwayarriveoutput.setText(subway);
+                                }
+                            });
+                        }
                     }
                 }).start();
                 break;
         }
     }
+
 
     private void hideKeyboard()
     {

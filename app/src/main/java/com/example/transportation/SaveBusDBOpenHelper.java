@@ -51,25 +51,27 @@ public class SaveBusDBOpenHelper {
         mDB.close();
     }
     // Insert DB
-    public long insertColumn(String stationid, String busid, String ord, String arsid, String busnumber){
+    public long insertColumn(String stationid, String busid, String ord, String arsid, String busnumber, String stationname){
         ContentValues values = new ContentValues();
         values.put(SaveBusDB.CreateDB.STATIONID, stationid);
         values.put(SaveBusDB.CreateDB.BUSID, busid);
         values.put(SaveBusDB.CreateDB.ORD, ord);
         values.put(SaveBusDB.CreateDB.ARSID, arsid);
         values.put(SaveBusDB.CreateDB.BUSNUMBER, busnumber);
+        values.put(SaveBusDB.CreateDB.STATIONNAME, stationname);
         System.out.println("Value는"+values);
         return mDB.insert(SaveBusDB.CreateDB._TABLENAME0, null, values);
     }
 
     // Update DB
-    public boolean updateColumn(long id, String stationid, String busid, String ord, String arsid, String busnumber){
+    public boolean updateColumn(long id, String stationid, String busid, String ord, String arsid, String busnumber, String stationname){
         ContentValues values = new ContentValues();
         values.put(SaveBusDB.CreateDB.STATIONID, stationid);
         values.put(SaveBusDB.CreateDB.BUSID, busid);
         values.put(SaveBusDB.CreateDB.ORD, ord);
         values.put(SaveBusDB.CreateDB.ARSID, arsid);
         values.put(SaveBusDB.CreateDB.BUSNUMBER, busnumber);
+        values.put(SaveBusDB.CreateDB.STATIONNAME,stationname);
         return mDB.update(SaveBusDB.CreateDB._TABLENAME0, values, "_id=" + id, null) > 0;
     }
 
@@ -84,7 +86,7 @@ public class SaveBusDBOpenHelper {
     }
     // Select DB
     public Cursor selectColumns(){
-        return mDB.query(SaveBusDB.CreateDB._TABLENAME0, null, null, null, null, null, null);
+        return mDB.query(SaveBusDB.CreateDB._TABLENAME0, null, null, null, null, null, null, null);
     }
 
     // sort by column

@@ -11,7 +11,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class SubwayArrive {
-    String key="534d6b4767676b73313239724152544e";
+    String key="547750515464796a38336975595472";
     String output;
     boolean check1, check2;
 
@@ -42,8 +42,8 @@ public class SubwayArrive {
             String queryUrl = "http://swopenapi.seoul.go.kr/api/subway/" + key +
                     "/xml/realtimeStationArrival/0/20/" + name;
             System.out.println(queryUrl);
+            while(outputarray.size() == 0) {
 
-            while(subwayId.size() == 0) {
                 try {
                     URL url = new URL(queryUrl);
                     InputStream is = url.openStream();
@@ -75,19 +75,19 @@ public class SubwayArrive {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
 
 
-            for (int i = 0; i < arvlMsg2.size(); i++) {
-                if ((subwayId.get(i).toString()).equals(inputline)) {
-                    if ((updnLine.get(i).toString()).equals(inputdirection)) {
-                        check = true;
-                        outputarray.add(arvlMsg2.get(i));
+                for (int i = 0; i < arvlMsg2.size(); i++) {
+                    if ((subwayId.get(i).toString()).equals(inputline)) {
+                        if ((updnLine.get(i).toString()).equals(inputdirection)) {
+                            check = true;
+                            outputarray.add(arvlMsg2.get(i));
+                        }
                     }
                 }
+                System.out.println("outputarray 크기" + outputarray.size());
+                System.out.println("outputarray=" + outputarray);
             }
-            System.out.println("outputarray 크기" + outputarray.size());
-            System.out.println("outputarray=" + outputarray);
 
    //     }
 
@@ -128,7 +128,11 @@ public class SubwayArrive {
     }
 
     String getarrmsg1string() {
-        return outputarray.get(0).toString();
+        if(outputarray.size() != 0) {
+            return outputarray.get(0).toString();
+        }
+        else
+            return " ";
     }
     String getarrmsg2string() {
         return outputarray.get(1).toString();

@@ -15,8 +15,8 @@ public final class LastStationDB {
                 + _ID + " integer primary key autoincrement, "
                 + SUBWAYSTATIONID + " text not null , "
                 + DAILYTYPE + " text not null , "
-                + UPDOWNTYPE + " integer not null , "
-                + ARRTIME + " integer not null , "
+                + UPDOWNTYPE + " text not null , "
+                + ARRTIME + " text not null , "
                 + DEPTIME + " text not null );";
     }
 }

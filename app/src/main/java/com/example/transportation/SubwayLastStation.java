@@ -22,8 +22,6 @@ public class SubwayLastStation {
     ArrayList arrTime = new ArrayList<>();
     ArrayList depTime = new ArrayList<>();
 
-    int count;
-
     ArrayList getArrTime(){
         return arrTime;
     }
@@ -49,7 +47,6 @@ public class SubwayLastStation {
                             xpp.setInput(new InputStreamReader(is, "UTF-8"));
                             String tag;
                             int eventType = xpp.getEventType();
-                            count++;
                             while (eventType != XmlPullParser.END_DOCUMENT) {
                                 switch (eventType) {
                                     case XmlPullParser.START_TAG:
@@ -72,7 +69,6 @@ public class SubwayLastStation {
                         //System.out.println(check);
                     }
 
-        System.out.println("size=====>" + count);
         System.out.println(arrTime.size());
         System.out.println(depTime.size());
 

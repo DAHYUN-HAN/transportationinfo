@@ -12,7 +12,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class SubwayNameList {
-    String key="534d6b4767676b73313239724152544e";
+    String key="547750515464796a38336975595472";
 
     ArrayList subwayId = new ArrayList<>();
     ArrayList statnNm = new ArrayList<>();
@@ -29,17 +29,6 @@ public class SubwayNameList {
         }
         else if(stationline.equals("6호선")) {
             statnNm.remove("응암(하선-종착)");
-        }
-        else if(stationline.equals("9호선")) {
-            statnNm.add("삼전");
-            statnNm.add("석촌고분");
-            statnNm.add("석촌");
-            statnNm.add("송파나루");
-            statnNm.add("한성백제");
-            statnNm.add("올림픽공원");
-            statnNm.add("둔촌오륜");
-            statnNm.add("중앙보훈병원");
-            i=8;
         }
         else if(stationline.equals("경의중앙선")) {
             statnNm.add("지평");

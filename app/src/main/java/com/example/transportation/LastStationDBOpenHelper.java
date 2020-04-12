@@ -89,8 +89,13 @@ public class LastStationDBOpenHelper {
     }
 
     // sort by column
-    public Cursor sortColumn(String sort){
-        Cursor c = mDB.rawQuery( "SELECT * FROM laststation ORDER BY " + sort + ";", null);
+    public Cursor aaexist(){
+        Cursor c = mDB.rawQuery( "SELECT subwaystationid, dailytype, updowntype FROM laststation ORDER BY subwaystationid;", null);
+        return c;
+    }
+
+    public Cursor exist(String id, String daily, String updown){
+        Cursor c = mDB.rawQuery("SELECT arrtime, deptime FROM laststation WHERE subwaystationid = '" + id +"' AND dailytype = '" + daily + "' AND updowntype = '" + updown + "';", null);
         return c;
     }
 }
